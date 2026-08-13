@@ -4,47 +4,13 @@ import {
   ChevronRight, Calendar, Clock, ArrowLeft, Play, Search,
   Eye, Mail, Phone,
   Newspaper, Users, Library, Zap,
-  CheckCircle, ArrowUpRight, GraduationCap, Award, Building
+  CheckCircle, ArrowUpRight, GraduationCap, Award, Building,
+  Loader2, MapPin, Globe
 } from "lucide-react";
+import { PemetaanService } from "@/services/pemetaanService";
+import type { SekolahDetailResponse } from "@/types";
 
-// --- Deterministic Data Generator ---
-const getDeterministicData = (schoolId: string, schoolName: string) => {
-  let hash = 0;
-  const idStr = String(schoolId || schoolName || "");
-  for (let i = 0; i < idStr.length; i++) {
-    hash = idStr.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  hash = Math.abs(hash);
-
-  const principalNames = [
-    "Drs. H. Ahmad Fauzi, M.Pd.", "Dr. I Wayan Sudarta, S.Pd., M.Si.",
-    "Siti Rahmawati, S.Pd., M.Pd.", "Hendra Wijaya, S.T., M.Kom.",
-  ];
-  const kecamatanList = ["Palu Timur", "Palu Barat", "Palu Selatan", "Palu Utara", "Donggala"];
-
-  const studentCount = 350 + (hash % 650);
-  const totalTeachers = 15 + (hash % 45);
-  const pnsCount = Math.round(totalTeachers * (50 + (hash % 35)) / 100);
-  const npsn = `${69000000 + (hash % 999999)}`;
-  const accreditation = ["A", "B", "A"][hash % 3];
-
-  return {
-    principalName: principalNames[hash % principalNames.length],
-    kecamatan: kecamatanList[hash % kecamatanList.length],
-    studentCount,
-    totalTeachers,
-    pnsCount,
-    nonPnsCount: totalTeachers - pnsCount,
-    npsn,
-    accreditation,
-    rombelCount: Math.round(studentCount / 32),
-    email: `info.${schoolName.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10)}@sch.id`,
-    phone: `0451-${2000 + (hash % 8000)}`,
-    address: `Jl. Pendidikan No. ${1 + (hash % 100)}, ${kecamatanList[hash % kecamatanList.length]}, Sulawesi Tengah`,
-  };
-};
-
-// --- Mock Data ---
+// --- Mock Data (konten statis yang belum ada endpoint-nya) ---
 const newsItems = [
   { tag: "Prestasi", title: "Raih Juara I Olimpiade Sains Tingkat Provinsi 2022", date: "28 Nov 2022", img: "🏆", readTime: "3 mnt" },
   { tag: "Umum", title: "Lestarikan Keragaman Budaya Nusantara, Eversac Gelar Lomba", date: "1 Des 2022", img: "🎨", readTime: "5 mnt" },
@@ -70,26 +36,67 @@ export const SchoolLandingV3 = () => {
   const queryParams = new URLSearchParams(search);
 
   const schoolName = queryParams.get("name") || `SMA Negeri (ID: ${id})`;
-  const d = getDeterministicData(id || "1", schoolName);
+
+  // ── State data sekolah dari API ────────────────────────────────────────────
+  const [sekolahData, setSekolahData] = useState<SekolahDetailResponse["data"] | null>(null);
+  const [sekolahLoading, setSekolahLoading] = useState(true);
+
+  // Derived data dari API dengan fallback graceful
+  const npsn         = sekolahData?.npsn ?? id ?? "-";
+  const kecamatan    = sekolahData?.kecamatan ?? "-";
+  const kabupaten    = sekolahData?.kabupaten ?? "-";
+  const email        = sekolahData?.email ?? "-";
+  const telepon      = sekolahData?.nomor_telepon ?? "-";
+  const website      = sekolahData?.website ?? null;
+  const akreditasi   = sekolahData?.akreditasi ?? "-";
+  const studentCount = sekolahData?.jumlah_siswa ?? 0;
+  const dayaTampung  = sekolahData?.daya_tampung ?? 0;
+  const statusSekolah = sekolahData?.status_sekolah ?? "-";
+  const bentukPendidikan = sekolahData?.bentuk_pendidikan ?? "-";
+  const alamat       = sekolahData?.alamat_jalan ?? "-";
+  const is3T         = sekolahData?.is_3t ?? false;
+  const aksesInternet = sekolahData?.akses_internet ?? "-";
+
+  // Dari detailSma
+  const kepsek       = sekolahData?.detailSma?.kepsek ?? "-";
+  const nipKepsek    = sekolahData?.detailSma?.nip_kepsek ?? "-";
+  const hpKepsek     = sekolahData?.detailSma?.no_hp_kepsek ?? null;
+  const statusKepsek = sekolahData?.detailSma?.status_kepsek ?? "-";
+
+  // Komposisi guru dari detailSma (hanya jika ada polygon — indikator data lengkap)
+  const pnsCount    = 0; // belum tersedia dari backend
+  const totalTeachers = 0;
 
   const [scrolled, setScrolled] = useState(false);
 
+  // ── Fetch detail sekolah dari API pemetaan ─────────────────────────────────
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    if (!id) return;
+    setSekolahLoading(true);
+    PemetaanService.getSekolahDetail(id)
+      .then((res) => {
+        if (res?.data) setSekolahData(res.data);
+      })
+      .catch((err) => console.error("Gagal fetch detail sekolah:", err))
+      .finally(() => setSekolahLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     window.scrollTo({ top: 0, behavior: "smooth" });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
+  const scrollTo = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
     if (el) {
       const y = el.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
+
+  const fullAddress = [alamat !== "-" ? alamat : null, kecamatan !== "-" ? `Kec. ${kecamatan}` : null, kabupaten !== "-" ? kabupaten : null, "Sulawesi Tengah"].filter(Boolean).join(", ");
 
   return (
     <div className="min-h-screen bg-[#050B14] text-white font-poppins selection:bg-blue-500 selection:text-white">
@@ -170,22 +177,30 @@ export const SchoolLandingV3 = () => {
                     <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
                       <GraduationCap className="w-6 h-6" />
                     </div>
-                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-white/70">Akreditasi {d.accreditation}</span>
+                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-white/70">
+                      {sekolahLoading ? "..." : akreditasi !== "-" ? `Akreditasi ${akreditasi}` : "Akreditasi -"}
+                    </span>
                   </div>
                   <div>
-                    <div className="text-3xl font-black text-white">{d.studentCount}</div>
+                    <div className="text-3xl font-black text-white">
+                      {sekolahLoading ? <Loader2 className="w-6 h-6 animate-spin text-white/30" /> : studentCount.toLocaleString("id-ID")}
+                    </div>
                     <div className="text-xs text-white/50 uppercase font-bold tracking-wider">Siswa Aktif</div>
                   </div>
                 </div>
                 <div className="h-1/2 bg-white/5 p-8 flex gap-4">
                    <div className="flex-1 bg-white/5 rounded-xl border border-white/5 p-4 flex flex-col justify-center items-center text-center">
                       <Award className="w-6 h-6 text-indigo-400 mb-2" />
-                      <div className="text-xl font-black text-white">{d.totalTeachers}</div>
-                      <div className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Guru & Tendik</div>
+                      <div className="text-xl font-black text-white">
+                        {sekolahLoading ? "..." : dayaTampung.toLocaleString("id-ID")}
+                      </div>
+                      <div className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Daya Tampung</div>
                    </div>
                    <div className="flex-1 bg-white/5 rounded-xl border border-white/5 p-4 flex flex-col justify-center items-center text-center">
                       <Building className="w-6 h-6 text-emerald-400 mb-2" />
-                      <div className="text-xl font-black text-white">{d.rombelCount}</div>
+                      <div className="text-xl font-black text-white">
+                        {sekolahLoading ? "..." : studentCount > 0 ? Math.round(studentCount / 32) : "-"}
+                      </div>
                       <div className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Rombel</div>
                    </div>
                 </div>
@@ -199,7 +214,7 @@ export const SchoolLandingV3 = () => {
                   </div>
                   <div>
                     <div className="text-sm font-black text-white">NPSN Aktif</div>
-                    <div className="text-xs text-white/60">{d.npsn}</div>
+                    <div className="text-xs text-white/60">{sekolahLoading ? "..." : npsn}</div>
                   </div>
                 </div>
               </div>
@@ -228,14 +243,16 @@ export const SchoolLandingV3 = () => {
                     <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-2xl">👨‍💼</div>
                     <div>
                       <div className="text-[10px] text-white/40 uppercase font-black tracking-wider">Kepala Sekolah</div>
-                      <div className="text-sm font-bold text-white">{d.principalName}</div>
+                      <div className="text-sm font-bold text-white">{sekolahLoading ? "Memuat..." : kepsek}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5">
                     <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-2xl">📍</div>
                     <div>
                       <div className="text-[10px] text-white/40 uppercase font-black tracking-wider">Lokasi</div>
-                      <div className="text-sm font-bold text-white">Kec. {d.kecamatan}</div>
+                      <div className="text-sm font-bold text-white">
+                        {sekolahLoading ? "..." : kecamatan !== "-" ? `Kec. ${kecamatan}` : kabupaten}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -243,25 +260,40 @@ export const SchoolLandingV3 = () => {
              
              <div className="bg-gradient-to-br from-blue-600/10 to-indigo-600/10 p-8 rounded-3xl border border-blue-500/20 flex flex-col">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-blue-400" /> Komposisi Guru
+                  <Users className="w-4 h-4 text-blue-400" /> Info Dapodik
                 </h3>
-                <div className="flex-1 flex flex-col justify-center gap-6">
+                <div className="flex-1 flex flex-col justify-center gap-4">
                    <div className="space-y-2">
                      <div className="flex justify-between text-sm">
-                       <span className="text-white/70 font-medium">Guru PNS</span>
-                       <span className="font-bold text-white">{d.pnsCount}</span>
-                     </div>
-                     <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(d.pnsCount/d.totalTeachers)*100}%` }} />
+                       <span className="text-white/70 font-medium">Status Sekolah</span>
+                       <span className="font-bold text-white">{sekolahLoading ? "..." : statusSekolah}</span>
                      </div>
                    </div>
                    <div className="space-y-2">
                      <div className="flex justify-between text-sm">
-                       <span className="text-white/70 font-medium">Guru Honorer / PPPK</span>
-                       <span className="font-bold text-white">{d.nonPnsCount}</span>
+                       <span className="text-white/70 font-medium">Jumlah Siswa</span>
+                       <span className="font-bold text-white">{sekolahLoading ? "..." : studentCount.toLocaleString("id-ID")}</span>
                      </div>
                      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(d.nonPnsCount/d.totalTeachers)*100}%` }} />
+                       <div className="h-full bg-blue-500 rounded-full transition-all duration-700"
+                         style={{ width: dayaTampung > 0 ? `${Math.min((studentCount / dayaTampung) * 100, 100)}%` : "0%" }} />
+                     </div>
+                   </div>
+                   <div className="space-y-2">
+                     <div className="flex justify-between text-sm">
+                       <span className="text-white/70 font-medium">Daya Tampung</span>
+                       <span className="font-bold text-white">{sekolahLoading ? "..." : dayaTampung.toLocaleString("id-ID")}</span>
+                     </div>
+                     <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
+                     </div>
+                   </div>
+                   <div className="space-y-2">
+                     <div className="flex justify-between text-sm">
+                       <span className="text-white/70 font-medium">Akses Internet</span>
+                       <span className="font-bold text-white text-right text-xs max-w-[120px] leading-snug">
+                         {sekolahLoading ? "..." : aksesInternet}
+                       </span>
                      </div>
                    </div>
                 </div>
@@ -420,11 +452,11 @@ export const SchoolLandingV3 = () => {
                     <span className="font-black text-white text-lg tracking-wide">{schoolName}</span>
                   </div>
                   <p className="text-xs text-white/50 leading-relaxed pr-4">
-                    {d.address}
+                    {sekolahData?.alamat_jalan ?? "-"}
                   </p>
                   <div className="space-y-2 text-xs font-medium text-white/60">
-                    <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-blue-400" /> {d.email}</div>
-                    <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /> {d.phone}</div>
+                    <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-blue-400" /> {sekolahData?.email ?? "-"}</div>
+                    <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /> {sekolahData?.nomor_telepon ?? "-"}</div>
                   </div>
                </div>
 

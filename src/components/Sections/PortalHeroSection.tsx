@@ -1,195 +1,144 @@
 import React from "react";
-import { SulawesiMap } from "../Fragments/SulawesiMap";
-import { GeneralDataSection } from "./GeneralDataSection";
-import { ProgressUpdateSection } from "./ProgressUpdateSection";
+import { useNavigate } from "react-router-dom";
+import { SulawesiMap, CABDIS_CONFIG } from "../Fragments/SulawesiMap";
 import { ProyeksiCard } from "./ProyeksiCardSection";
 import { PortalDataCards } from "./PortalCardSection";
 
 interface Props {
   portalData: any;
   onViewRegionDetail: (marker: any) => void;
-  onOpenNeraca?: () => void;
-  onOpenBantuan?: () => void;
-  onProyeksiFilterChange?: (
-    range: "monthly" | "yearly",
-    month?: number,
-  ) => void;
+  onProyeksiFilterChange?: (range: "monthly" | "yearly", month?: number) => void;
   onOpenProyeksiDetail?: (category: string) => void;
   onOpenJatuhTempoDetail?: (category: string) => void;
-  onOpenSchoolReports?: () => void;
   proyeksiLoading?: boolean;
-  currentMonth?: string;
 }
 
+// ─── Legend Cabdis ────────────────────────────────────────────────────────────
+const CabdisLegend: React.FC<{ onNavigate: (slug: string) => void }> = ({ onNavigate }) => (
+  <div className="flex flex-wrap items-center justify-center gap-2">
+    {Object.entries(CABDIS_CONFIG).map(([slug, cfg]) => (
+      <button
+        key={slug}
+        onClick={() => onNavigate(slug)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/60 bg-white/70 backdrop-blur-sm hover:bg-white/95 hover:shadow-md transition-all duration-200 group cursor-pointer"
+        title={cfg.label}
+      >
+        <span
+          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm group-hover:scale-125 transition-transform"
+          style={{ background: cfg.color }}
+        />
+        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+          {slug.replace("cabdis-", "Wil. ")}
+        </span>
+      </button>
+    ))}
+  </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export const PortalHeroSection: React.FC<Props> = ({
   portalData,
   onViewRegionDetail,
-  onOpenNeraca,
-  onOpenBantuan,
   onProyeksiFilterChange,
   onOpenProyeksiDetail,
   onOpenJatuhTempoDetail,
-  onOpenSchoolReports,
   proyeksiLoading,
-  currentMonth,
 }) => {
-  // console.log(portalData);
+  const navigate = useNavigate();
 
-
-  const schoolSummary = portalData?.cards?.school_reports;
-
-  const cards = portalData?.cards || {
-    kepegawaian: { finished: 0, total: 1000, percentage: 0 },
+  const handleViewRegionDetail = (region: any) => {
+    if (onViewRegionDetail) {
+      onViewRegionDetail(region);
+    } else {
+      const slug = region.slug ?? "cabdis-1";
+      navigate(`/${slug}?name=${encodeURIComponent(region.name ?? region.kabupaten ?? "")}`);
+    }
   };
 
-  const gtkStats = portalData?.gtkStats || {
-    stats: { abk_recap: { recap: { kekurangan: 0, kelebihan: 0, ideal: 0 } } },
+  const handleNavigateCabdis = (slug: string) => {
+    const num = slug.replace("cabdis-", "");
+    navigate(`/${slug}?name=${encodeURIComponent(`Wilayah ${num}`)}`);
   };
+
+  const schoolSummary = portalData?.school_reports;
 
   return (
-    <section className="relative w-full py-10 px-4 md:px-10 flex flex-col items-center justify-center overflow-hidden">
-      {/* Center: Title & Hero Title */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center justify-start z-10 pointer-events-none">
-        <img src="/logo.png" className="w-[50%]" alt="Logo" />
+    <section className="relative w-full overflow-hidden" style={{ minHeight: "100vh" }}>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 1 — Peta interaktif Sulawesi Tengah (Full Screen Background)
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="absolute inset-0 z-10">
+        <SulawesiMap
+          layer="interactive"
+          kabupatenStats={portalData?.kabupatenStats ?? []}
+        />
       </div>
 
-      {/* Map Background (BASE) - BEHIND EVERYTHING */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="w-full h-full scale-[1.1] flex items-center justify-center">
-          <SulawesiMap layer="base" />
-        </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 2 — Logo di tengah atas
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center">
+        <img src="/logo.png" className="h-12 object-contain" alt="Logo Portal" />
       </div>
 
-      {/* Map Background (INTERACTIVE) - ON TOP OF EVERYTHING */}
-      <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
-        <div className="w-full h-full scale-[1.1] flex items-center justify-center">
-          <SulawesiMap
-            layer="interactive"
-            markers={portalData?.summary?.mapMarkers || []}
-            onViewDetail={onViewRegionDetail}
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 3 — Card Kiri (Floating, z-30, tidak menutupi peta)
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="absolute left-6 top-24 z-30 w-[280px] xl:w-[300px] hidden lg:block">
+        <ProyeksiCard
+          jenjangStats={portalData?.jenjangStats ?? []}
+          isLoading={proyeksiLoading}
+        />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 3 — Cards Kanan (Floating, z-30, tidak menutupi peta)
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="absolute right-6 top-24 z-30 w-[280px] xl:w-[300px] hidden lg:block">
+        <PortalDataCards
+          cards={portalData?.cards ?? []}
+          onViewRegionDetail={handleViewRegionDetail}
+        />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 4 — Spacer untuk mengalokasikan ruang peta (push konten ke bawah)
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="relative z-0 w-full" style={{ height: "70vh", minHeight: "580px" }} aria-hidden="true" />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAYER 5 — Content bawah (bisa di-scroll)
+      ════════════════════════════════════════════════════════════════════ */}
+      <div className="relative z-30 w-full flex flex-col">
+
+        {/* Mobile cards (tampil di mobile, hidden di desktop) */}
+        <div className="lg:hidden flex flex-col gap-5 px-6 pb-6">
+          <ProyeksiCard
+            jenjangStats={portalData?.jenjangStats ?? []}
+            isLoading={proyeksiLoading}
           />
-        </div>
-      </div>
-
-      {/* Main Flex Content - AT LOWER Z-INDEX */}
-      <div className="relative z-10 w-full flex flex-col lg:flex-row gap-4 items-start px-10">
-        {/* Left: Proyeksi */}
-        <div className="flex-[3] flex flex-col gap-6">
-          <div className="w-full lg:w-1/3">
-            <ProyeksiCard
-              projections={portalData?.projections}
-              onFilterChange={onProyeksiFilterChange}
-              onOpenDetail={onOpenProyeksiDetail}
-              onOpenJatuhTempoDetail={onOpenJatuhTempoDetail}
-              isLoading={proyeksiLoading}
-            />
-          </div>
-          <GeneralDataSection data={portalData?.summary} />
-        </div>
-        {/* Right: Portal Data (Kabupaten & Kota Cards) */}
-        <div className="flex-[1] flex flex-col w-full">
           <PortalDataCards
-            cards={cards}
-            gtkStats={gtkStats}
-            onViewRegionDetail={onViewRegionDetail}
+            cards={portalData?.cards ?? []}
+            onViewRegionDetail={handleViewRegionDetail}
           />
         </div>
-      </div>
 
-      <div className="w-full flex justify-between items-start mt-10 relative z-10 px-10">
-        {/* Combined Neraca & Bantuan Cards */}
-        <div className="flex gap-4">
-          <div
-            className="w-64 p-6 rounded-[2.5rem] bg-gradient-to-br from-[#2588EB] via-[#3b82f6] to-[#10B981] text-white flex flex-col gap-4 cursor-pointer hover:scale-105 transition-transform shadow-xl shadow-blue-500/20"
-            onClick={onOpenNeraca}
-          >
-            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <div>
-              <div className="font-bold text-sm">
-                Neraca Pendidikan
-              </div>
-              <p className="text-xs text-white/80 font-medium leading-relaxed">
-                Data Dapodik GTK & Kepegawaian Daerah
-              </p>
-            </div>
-            <button
-              className="w-full py-3 bg-blue-700/30 rounded-2xl text-xs font-semibold border border-white/10 hover:bg-white/20 transition-colors mt-auto"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenNeraca?.();
-              }}
-            >
-              Lihat Neraca
-            </button>
-          </div>
-
-          <div
-            className="w-64 p-6 rounded-[2.5rem] bg-gradient-to-b from-[#8B5CF6] to-[#A78BFA] text-white flex flex-col gap-4 cursor-pointer hover:scale-105 transition-transform shadow-xl shadow-violet-500/20"
-            onClick={onOpenBantuan}
-          >
-            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <div className="font-bold text-sm">
-                Customer Center / Bantuan
-              </div>
-              <p className="text-xs text-white/80 font-medium leading-relaxed">
-                Layanan Bantuan & SOP Pulpen
-              </p>
-            </div>
-            <button
-              className="w-full py-3 bg-violet-700/50 rounded-2xl text-xs font-semibold border border-white/10 hover:bg-violet-500 transition-colors mt-auto"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenBantuan?.();
-              }}
-            >
-              Lihat Bantuan
-            </button>
+        {/* ── Legend Cabdis — di tengah ── */}
+        <div className="w-full flex justify-center px-6 pb-5">
+          <div className="inline-flex flex-col items-center gap-2 px-5 py-3 rounded-[1.5rem] bg-white/75 backdrop-blur-md border border-white/70 shadow-lg">
+            <span className="text-[9px] font-black uppercase tracking-[0.35em] text-slate-400">
+              Peta Wilayah Cabang Dinas — Klik untuk Kunjungi
+            </span>
+            <CabdisLegend onNavigate={handleNavigateCabdis} />
           </div>
         </div>
 
-        <div className="flex-1 ml-6">
-          <ProgressUpdateSection
-            summary={schoolSummary}
-            currentMonth={currentMonth}
-            onClick={onOpenSchoolReports}
-          />
-        </div>
-      </div>
-
-      <footer className="py-0 flex flex-col items-center gap-6 opacity-50 mt-10">
-        <p className="text-center">
+        {/* Footer */}
+        <footer className="w-full py-4 text-center text-xs opacity-40 shrink-0">
           &copy; 2026 BLPT - Dinas Pendidikan Provinsi Sulawesi Tengah
-        </p>
-      </footer>
+        </footer>
+      </div>
     </section>
   );
 };

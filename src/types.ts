@@ -4,6 +4,160 @@ export interface DetailData {
   data: any; // Can be detailed list array or object
 }
 
+// ─── Pemetaan API Response Interfaces ────────────────────────────────────────
+
+/** Response dari GET /api/v1/portal/landing */
+export interface PemetaanLandingData {
+  status: string;
+  data: {
+    summary: {
+      total_sekolah: number;
+      total_sd: number;
+      total_smp: number;
+      total_sma: number;
+      total_paud: number;
+      total_3t: number;
+      semester_id: string;
+    };
+    cards: {
+      kabupaten: string;
+      kode_kabupaten: string;
+      total_sekolah: number;
+    }[];
+    neracaRekap: {
+      bentuk_pendidikan: string;
+      jumlah: number;
+    }[];
+  };
+}
+
+/** Satu item sekolah dari GET /api/v1/sekolah (untuk marker peta) */
+export interface SekolahMarker {
+  npsn: string;
+  nama: string;
+  bentuk_pendidikan: string;
+  alamat_jalan: string;
+  kecamatan: string;
+  kabupaten: string;
+  kode_kabupaten: string;
+  lintang: number | null;
+  bujur: number | null;
+  is_3t: boolean;
+  is_sekolah_alam: boolean;
+  jumlah_siswa: number;
+  daya_tampung: number;
+  status_sekolah: string;
+}
+
+/** Response dari GET /api/v1/sekolah */
+export interface SekolahListResponse {
+  status: string;
+  total: number;
+  data: SekolahMarker[];
+}
+
+/** Data detail SMA dari relasi school_sma */
+export interface DetailSma {
+  id: string;
+  name: string;
+  grade: string;
+  status: string;
+  kecamatan: string;
+  city: string;
+  kepsek: string | null;
+  nip_kepsek: string | null;
+  no_hp_kepsek: string | null;
+  status_kepsek: string | null;
+  address: string;
+  npsn: string;
+  latitude: string | null;
+  longitude: string | null;
+  polygon: any | null;
+}
+
+/** Response dari GET /api/v1/sekolah/:npsn */
+export interface SekolahDetailResponse {
+  status: string;
+  data: {
+    npsn: string;
+    nama: string;
+    bentuk_pendidikan: string;
+    status_sekolah: string;
+    alamat_jalan: string;
+    rt: string | null;
+    rw: string | null;
+    desa_kelurahan: string | null;
+    kecamatan: string;
+    kabupaten: string;
+    kode_kabupaten: string;
+    provinsi: string;
+    kode_pos: string | null;
+    lintang: number | null;
+    bujur: number | null;
+    nomor_telepon: string | null;
+    email: string | null;
+    website: string | null;
+    akreditasi: string | null;
+    jumlah_siswa: number;
+    daya_tampung: number;
+    is_3t: boolean;
+    is_sekolah_alam: boolean;
+    sumber_listrik: string | null;
+    akses_internet: string | null;
+    waktu_penyelenggaraan: string | null;
+    semester_id: string;
+    detailSma: DetailSma | null;
+  };
+}
+
+/** Response dari GET /api/v1/statistik/kabupaten */
+export interface StatistikKabupatenItem {
+  kabupaten: string;
+  kode_kabupaten: string;
+  total_sekolah: number;
+  total_sma: number;
+  total_smp: number;
+  total_sd: number;
+  total_3t: number;
+  total_siswa: number;
+  total_daya_tampung: number;
+}
+
+export interface StatistikKabupatenResponse {
+  status: string;
+  data: StatistikKabupatenItem[];
+}
+
+/** Response dari GET /api/v1/statistik/jenjang */
+export interface StatistikJenjangItem {
+  bentuk_pendidikan: string;
+  total: number;
+  total_negeri: number;
+  total_swasta: number;
+  total_siswa: number;
+}
+
+export interface StatistikJenjangResponse {
+  status: string;
+  data: StatistikJenjangItem[];
+}
+
+/** Response dari GET /api/v1/cabang-dinas */
+export interface CabangDinasItem {
+  id: number;
+  nama: string;
+  kode_kabupaten: string[] | null;
+  kabupaten_kota: string[] | null;
+  map_lat: number | null;
+  map_lng: number | null;
+  map_zoom: number | null;
+}
+
+export interface CabangDinasResponse {
+  status: string;
+  data: CabangDinasItem[];
+}
+
 export interface CabangConfig {
   id: number;
   name: string;

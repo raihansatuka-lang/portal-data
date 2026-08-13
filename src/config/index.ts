@@ -20,4 +20,5 @@ export const config = {
   SERVICE_REKAP: import.meta.env.VITE_API_SERVICE_REKAP,
   SERVICE_OPENDATA: import.meta.env.VITE_API_SERVICE_OPENDATA,
   API_MESSAGE_URL: import.meta.env.VITE_API_MESSAGE_URL,
+  SERVICE_PEMETAAN: import.meta.env.VITE_API_PEMETAAN,
 };

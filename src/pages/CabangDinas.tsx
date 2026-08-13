@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { CABANG_DATA } from "@/types";
+import type { CabangDinasItem } from "@/types";
 import { School as SchoolIcon, Search, ChevronLeft, MapPin, Eye } from "lucide-react";
 import { PortalService } from "@/services/portalService";
+import { PemetaanService } from "@/services/pemetaanService";
 import { ProyeksiCard } from "@/components/Sections/ProyeksiCardSection";
 import { GeneralDataSection } from "@/components/Sections/GeneralDataSection";
 import { ProgressUpdateSection } from "@/components/Sections/ProgressUpdateSection";
@@ -42,12 +44,34 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
 
   // Ekstraksi instan nomor wilayah (1-6) dari slug Cabdis (misal cabdis-2 -> 2)
   const numericId = slug ? parseInt(slug.replace("cabdis-", ""), 10) : null;
-  const cabangConfig = numericId ? CABANG_DATA.find((c) => c.id === numericId) : undefined;
+
+  // State untuk data cabang dinas dari API, dengan fallback ke CABANG_DATA statis
+  const [cabangApiData, setCabangApiData] = useState<CabangDinasItem | null>(null);
+  const cabangFallback = numericId ? CABANG_DATA.find((c) => c.id === numericId) : undefined;
+
+  // Gunakan data API jika tersedia, fallback ke CABANG_DATA statis
+  const cabangConfig = cabangApiData
+    ? {
+        id: cabangApiData.id,
+        name: cabangApiData.nama,
+        kabKotas: cabangApiData.kabupaten_kota ?? cabangFallback?.kabKotas ?? [],
+      }
+    : cabangFallback
+      ? { id: cabangFallback.id, name: cabangFallback.name, kabKotas: cabangFallback.kabKotas }
+      : undefined;
+
   const regionName = queryParams.get("name") || cabangConfig?.name || `Wilayah ${numericId || ""}`;
 
-  // Resolusi nilai kustom center dan zoom berdasarkan ID Cabdis aktif
-  const CUSTOM_MAP_CENTER = (numericId && CUSTOM_REGIONAL_CONFIGS[numericId]?.center) || null;
-  const CUSTOM_MAP_ZOOM = (numericId && CUSTOM_REGIONAL_CONFIGS[numericId]?.zoom) || null;
+  // Koordinat dari API jika tersedia, otherwise fallback ke CUSTOM_REGIONAL_CONFIGS
+  const CUSTOM_MAP_CENTER: [number, number] | null =
+    (cabangApiData?.map_lat && cabangApiData?.map_lng)
+      ? [cabangApiData.map_lat, cabangApiData.map_lng]
+      : (numericId && CUSTOM_REGIONAL_CONFIGS[numericId]?.center) || null;
+
+  const CUSTOM_MAP_ZOOM: number | null =
+    cabangApiData?.map_zoom
+      ?? (numericId && CUSTOM_REGIONAL_CONFIGS[numericId]?.zoom)
+      ?? null;
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -80,19 +104,29 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
 
   // 2. Fetch overall landing page context on mount
   useEffect(() => {
-    fetchLandingData();
+    fetchCabangDinas();
   }, []);
+
+  /** Ambil data cabang dinas dari API pemetaan untuk koordinat & nama akurat */
+  const fetchCabangDinas = async () => {
+    try {
+      const res = await PemetaanService.getCabangDinas();
+      if (res?.data && numericId) {
+        const found = res.data.find((c) => c.id === numericId);
+        if (found) setCabangApiData(found);
+      }
+    } catch (error) {
+      // Fallback ke CABANG_DATA statis sudah ditangani di cabangConfig
+      console.warn("Gagal fetch cabang dinas dari API, menggunakan data lokal:", error);
+    }
+  };
 
   const fetchDetail = async (includeDetails = false) => {
     setLoading(true);
     try {
-      const res = await PortalService.getRegionDetail({
-        slug: slug!,
-        month: localMonth,
-        range: localRange,
-        include_details: includeDetails ? "1" : "0",
-      });
-      setData(res);
+      // ✅ Pakai PemetaanService.getRegionDetail — bukan PortalService
+      const res = await PemetaanService.getRegionDetail(slug!);
+      if (res?.data) setData(res.data);
     } catch (error) {
       console.error("Failed to fetch region detail", error);
     } finally {
@@ -100,24 +134,17 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
     }
   };
 
-  // Fetch details on demand only when a sidebar is opened and details aren't in memory
-  const hasDetails = !!(data?.projections?.proyeksi?.data_category || data?.projections?.jatuh_tempo?.detail);
+  // Fetch details on demand only when a sidebar is opened
   const shouldFetchDetails = !!activeCategoryDetail || !!activeJatuhTempoDetail;
-
   useEffect(() => {
-    if (slug && shouldFetchDetails && !hasDetails && !loading) {
-      fetchDetail(true);
+    if (slug && shouldFetchDetails && !loading) {
+      fetchDetail();
     }
-  }, [slug, shouldFetchDetails, hasDetails]);
+  }, [slug, shouldFetchDetails]);
 
   const fetchLandingData = async () => {
-    try {
-      const res = await PortalService.getLandingData();
-      setPortalData(res?.data || {});
-    } catch (error) {
-      console.error("Failed to fetch landing data", error);
-      setPortalData({});
-    }
+    // CabangDinas tidak butuh landing data global
+    setPortalData({});
   };
 
   const handleProyeksiFilterChange = (range: "monthly" | "yearly", month?: number) => {
@@ -132,7 +159,8 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
   };
 
   // Redirect to home jika ID Cabdis tidak dikenal atau gagal terurai
-  if (!numericId || !cabangConfig) {
+  // Cek numericId valid (1-6); cabangConfig bisa null sementara API sedang loading
+  if (!numericId || isNaN(numericId) || numericId < 1 || numericId > 6) {
     return <Navigate to="/" replace />;
   }
 
@@ -229,7 +257,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
             <SulawesiMap
               layer="interactive"
               onlyShowId={numericId}
-              markers={portalData?.summary?.mapMarkers || []}
+              markers={[]}
               schools={data?.schools || []}
               customCenter={CUSTOM_MAP_CENTER}
               customZoom={CUSTOM_MAP_ZOOM}
@@ -262,7 +290,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
                 {regionName}
               </h1>
               <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mt-1">
-                Dinas Pendidikan Provinsi Sulawesi Tengah • Wilayah Kerja: {cabangConfig.kabKotas.join(", ")}
+                Dinas Pendidikan Provinsi Sulawesi Tengah • Wilayah Kerja: {cabangConfig?.kabKotas.join(", ")}
               </p>
             </div>
           </header>

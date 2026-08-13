@@ -3,6 +3,7 @@ import { useParams, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { CABANG_DATA } from "@/types";
 import { School as SchoolIcon, Search, ChevronLeft, MapPin, Eye, Plus, Minus, Target, X } from "lucide-react";
 import { PortalService } from "@/services/portalService";
+import { PemetaanService } from "@/services/pemetaanService";
 import { ProyeksiCard } from "@/components/Sections/ProyeksiCardSection";
 import { GeneralDataSection } from "@/components/Sections/GeneralDataSection";
 import { SulawesiMap } from "@/components/Fragments/SulawesiMap";
@@ -149,21 +150,15 @@ export const SchoolLandingSekolahku = ({ slug: propSlug }: { slug?: string }) =>
       setDetailLoading(true);
 
       // Fetch map data
-      PortalService.getSchoolMapData(schoolId)
+      PemetaanService.getSchoolMapData(schoolId)
         .then((res) => {
           if (res?.data) {
-            const found = res.data.schools?.find((s: any) => s.id === schoolId);
+            const found = res.data.schools?.find((s: any) => s.id === schoolId || s.npsn === schoolId);
             if (found) {
               setActiveSchool(found);
             }
             if (res.data.cabdis) {
-              let cabdisId = 1;
-              const idMatch = res.data.cabdis.id?.match(/\d+/);
-              if (idMatch) {
-                cabdisId = parseInt(idMatch[0], 10);
-              } else if (res.data.cabdis.name) {
-                cabdisId = getCabdisNumberFromName(res.data.cabdis.name);
-              }
+              const cabdisId = res.data.cabdis.id ?? 1;
               setActiveSchoolCabdisId(cabdisId);
               setDerivedCabdisSlug(`cabdis-${cabdisId}`);
             }
@@ -172,14 +167,14 @@ export const SchoolLandingSekolahku = ({ slug: propSlug }: { slug?: string }) =>
         .catch((err) => console.error("Failed to fetch school map data", err))
         .finally(() => setMapLoading(false));
 
-      // Fetch detailed school stats from our new backend endpoint!
-      PortalService.getSchoolDetail(schoolId)
+      // Fetch detail sekolah dari backend pemetaan
+      PemetaanService.getSchoolDetail(schoolId)
         .then((res) => {
           if (res?.data) {
             setSchoolDetail(res.data);
           }
         })
-        .catch((err) => console.error("Failed to fetch school details from backend", err))
+        .catch((err) => console.error("Failed to fetch school details", err))
         .finally(() => setDetailLoading(false));
     }
   }, [schoolId]);

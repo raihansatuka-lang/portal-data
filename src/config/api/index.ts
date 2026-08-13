@@ -42,6 +42,7 @@ export const api_berani_cerdas = createApiInstance(
   config.SERVICE_BERANI_CERDAS
 );
 export const api_opendata = createApiInstance(config.SERVICE_OPENDATA);
+export const api_pemetaan = createApiInstance(config.SERVICE_PEMETAAN);
 
 export const api_message = createApiInstance(config.API_MESSAGE_URL);
 export const formdata_school = createFormDataInstance(config.SERVICE_SCHOOL);

@@ -7,84 +7,14 @@ import {
   Copy, Check, TrendingUp, Star, Zap,
   Globe, Phone, Mail, ChevronRight,
   BookMarked, Layers, Target, ArrowUpRight,
-  Newspaper, Trophy, Cpu
+  Newspaper, Trophy, Cpu, Loader2
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { PortalService } from '@/services/portalService';
-
-// ─── Deterministic Mock Generator ────────────────────────────────────────────
-const getDeterministicData = (schoolId: string, schoolName: string) => {
-  let hash = 0;
-  const idStr = String(schoolId || schoolName || "");
-  for (let i = 0; i < idStr.length; i++) {
-    hash = idStr.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  hash = Math.abs(hash);
-
-  const principalNames = [
-    "Drs. H. Ahmad Fauzi, M.Pd.", "Dr. I Wayan Sudarta, S.Pd., M.Si.",
-    "Siti Rahmawati, S.Pd., M.Pd.", "Hendra Wijaya, S.T., M.Kom.",
-    "Ni Made Lestari, M.Pd.", "Drs. Syarifuddin, M.Si.",
-    "Sri Wahyuni, S.Pd., M.Hum.", "Dr. Irwan Setiawan, M.Pd.",
-    "Andi Hermawan, S.Pd., M.T.", "Hj. Nurhayati, S.Pd., M.Pd."
-  ];
-  const principalStatuses = [
-    "PNS (Pembina Utama Muda, IV/c)", "PNS (Pembina Tingkat I, IV/b)",
-    "PNS (Pembina, IV/a)", "PNS (Penata Tingkat I, III/d)", "PPPK (Ahli Madya)"
-  ];
-
-  const principalName = principalNames[hash % principalNames.length];
-  const principalStatus = principalStatuses[hash % principalStatuses.length];
-  const birthYear = 1965 + (hash % 20);
-  const recruitYear = birthYear + 25 + (hash % 5);
-  const nip = `${birthYear}${String(1 + (hash % 12)).padStart(2, "0")}${String(1 + (hash % 28)).padStart(2, "0")}${recruitYear}${String(1 + (hash % 12)).padStart(2, "0")}${(hash % 2) + 1}${String(100 + (hash % 900))}`;
-  const principalPhone = `0812-${4000 + (hash % 5000)}-${1000 + (hash % 8000)}`;
-
-  const accreditationList = ["A (Amat Baik)", "B (Baik)", "A (Amat Baik)"];
-  const accreditation = accreditationList[hash % accreditationList.length];
-  const studentCount = 350 + (hash % 650);
-  const rombelCount = Math.round(studentCount / 32);
-  const totalTeachers = 15 + (hash % 45);
-  const pnsCount = Math.round((totalTeachers * (50 + (hash % 35))) / 100);
-  const nonPnsCount = totalTeachers - pnsCount;
-  const certifiedPercentage = 40 + (hash % 45);
-  const abkStatuses = ["SEIMBANG / IDEAL", "KEKURANGAN GURU", "KELEBIHAN GURU"];
-  const abkStatus = abkStatuses[hash % abkStatuses.length];
-  const abkColor = abkStatus.includes("IDEAL")
-    ? { text: "#059669", bg: "#ecfdf5", border: "#a7f3d0" }
-    : (abkStatus.includes("KEKURANGAN")
-      ? { text: "#e11d48", bg: "#fff1f2", border: "#fecdd3" }
-      : { text: "#d97706", bg: "#fffbeb", border: "#fde68a" });
-
-  const email = `admin.${schoolName.toLowerCase().replace(/[^a-z0-9]/g, "")}@sch.id`;
-  const npsn = `${69000000 + (hash % 999999)}`;
-
-  // Projection data
-  const lulusanData = [2021, 2022, 2023, 2024, 2025].map((year, i) => ({
-    year,
-    count: 85 + (hash % 10) + i * (2 + (hash % 3)),
-    ptn: 40 + (hash % 30) + i * (1 + (hash % 2))
-  }));
-  const proyeksiSiswa = [2025, 2026, 2027].map((year, i) => ({
-    year,
-    count: studentCount + i * (10 + (hash % 20))
-  }));
-
-  const kecamatanList = [
-    "Palu Timur", "Palu Barat", "Palu Selatan", "Palu Utara",
-    "Donggala", "Sigi Biromaru", "Banawa", "Kulawi", "Palolo"
-  ];
-  const kecamatan = kecamatanList[hash % kecamatanList.length];
-
-  return {
-    principalName, principalStatus, nip, principalPhone,
-    accreditation, studentCount, rombelCount, totalTeachers,
-    pnsCount, nonPnsCount, certifiedPercentage, abkStatus, abkColor,
-    email, npsn, lulusanData, proyeksiSiswa, kecamatan
-  };
-};
+import { PemetaanService } from '@/services/pemetaanService';
+import type { SekolahDetailResponse } from '@/types';
 
 // ─── Counter Animation Hook ───────────────────────────────────────────────────
 const useCountUp = (target: number, duration = 1500, started = false) => {
@@ -203,7 +133,27 @@ export const SchoolLanding = () => {
   const isSwasta = schoolName.toUpperCase().includes("SWASTA");
   const gradeType = schoolName.toUpperCase().includes("SMK") ? "SMK"
     : schoolName.toUpperCase().includes("SLB") ? "SLB" : "SMA";
-  const d = getDeterministicData(id || "1", schoolName);
+
+  // ── State data sekolah dari API ────────────────────────────────────────────
+  const [sekolahData, setSekolahData] = useState<SekolahDetailResponse["data"] | null>(null);
+  const [sekolahLoading, setSekolahLoading] = useState(true);
+
+  // Derived data dari API (dengan fallback "-" agar UI tidak crash)
+  const npsn        = sekolahData?.npsn ?? id ?? "-";
+  const kecamatan   = sekolahData?.kecamatan ?? "-";
+  const email       = sekolahData?.email ?? "-";
+  const telepon     = sekolahData?.nomor_telepon ?? "-";
+  const akreditasi  = sekolahData?.akreditasi ?? "-";
+  const studentCount = sekolahData?.jumlah_siswa ?? 0;
+  const dayaTampung  = sekolahData?.daya_tampung ?? 0;
+  const rombelCount  = studentCount > 0 ? Math.round(studentCount / 32) : 0;
+  const is3T         = sekolahData?.is_3t ?? false;
+
+  // Data dari relasi detailSma (kepala sekolah, dll)
+  const kepsek       = sekolahData?.detailSma?.kepsek ?? "-";
+  const nipKepsek    = sekolahData?.detailSma?.nip_kepsek ?? "-";
+  const hpKepsek     = sekolahData?.detailSma?.no_hp_kepsek ?? "-";
+  const statusKepsek = sekolahData?.detailSma?.status_kepsek ?? "-";
 
   const [activeSection, setActiveSection] = useState<"overview" | "akademik" | "gtk" | "berita">("overview");
   const [copiedNip, setCopiedNip] = useState(false);
@@ -212,6 +162,19 @@ export const SchoolLanding = () => {
   const statsRef = useRef<HTMLDivElement>(null);
   const [mapData, setMapData] = useState<{ schools: any[], cabdis: any } | null>(null);
   const [cabdisGeoData, setCabdisGeoData] = useState<Record<number, any>>({});
+
+  // ── Fetch detail sekolah dari API pemetaan ─────────────────────────────────
+  useEffect(() => {
+    if (!id) return;
+    setSekolahLoading(true);
+    // id di route bisa berupa npsn langsung atau ID lain — coba sebagai npsn
+    PemetaanService.getSekolahDetail(id)
+      .then((res) => {
+        if (res?.data) setSekolahData(res.data);
+      })
+      .catch((err) => console.error("Gagal fetch detail sekolah:", err))
+      .finally(() => setSekolahLoading(false));
+  }, [id]);
 
   useEffect(() => {
     const loadGeoData = async () => {
@@ -257,7 +220,7 @@ export const SchoolLanding = () => {
   const accentColor = isSwasta ? "#059669" : "#4f46e5";
 
   const copyNip = () => {
-    navigator.clipboard.writeText(d.nip);
+    navigator.clipboard.writeText(nipKepsek);
     setCopiedNip(true);
     setTimeout(() => setCopiedNip(false), 2000);
   };
@@ -318,8 +281,16 @@ export const SchoolLanding = () => {
     { date: "10 Jul", event: "Orientasi Peserta Didik Baru", status: "mendatang" },
   ];
 
-  const rawLat = mapData?.schools?.find(s => s.id === id)?.latitude ?? mapData?.cabdis?.latitude ?? -0.8917;
-  const rawLng = mapData?.schools?.find(s => s.id === id)?.longitude ?? mapData?.cabdis?.longitude ?? 119.8707;
+  // ── Peta: koordinat sekolah aktif dari API atau mapData
+  // Prioritas: koordinat dari sekolahData API pemetaan, fallback ke mapData (portalService)
+  const rawLat = sekolahData?.lintang
+    ?? mapData?.schools?.find((s: any) => s.id === id)?.latitude
+    ?? mapData?.cabdis?.latitude
+    ?? -0.8917;
+  const rawLng = sekolahData?.bujur
+    ?? mapData?.schools?.find((s: any) => s.id === id)?.longitude
+    ?? mapData?.cabdis?.longitude
+    ?? 119.8707;
 
   const centerLat = isNaN(Number(rawLat)) ? -0.8917 : Number(rawLat);
   const centerLng = isNaN(Number(rawLng)) ? 119.8707 : Number(rawLng);
@@ -471,8 +442,9 @@ export const SchoolLanding = () => {
             {[
               { label: isSwasta ? "Swasta" : "Negeri", bg: "rgba(255,255,255,0.15)" },
               { label: gradeType, bg: "rgba(255,255,255,0.15)" },
-              { label: `Akreditasi ${d.accreditation.split(" ")[0]}`, bg: "rgba(255,255,255,0.15)" },
-              { label: `NPSN ${d.npsn}`, bg: "rgba(255,255,255,0.08)" },
+              { label: akreditasi !== "-" ? `Akreditasi ${akreditasi}` : "Akreditasi -", bg: "rgba(255,255,255,0.15)" },
+              { label: `NPSN ${npsn}`, bg: "rgba(255,255,255,0.08)" },
+              ...(is3T ? [{ label: "3T", bg: "rgba(220,38,38,0.25)" }] : []),
             ].map((b, i) => (
               <span key={i} className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white border border-white/20 backdrop-blur-sm"
                 style={{ background: b.bg }}>
@@ -489,7 +461,7 @@ export const SchoolLanding = () => {
 
           <div className="flex items-center gap-2 mt-4 text-white/70 text-sm font-medium">
             <MapPin className="w-4 h-4" />
-            <span>Kecamatan {d.kecamatan}, Sulawesi Tengah</span>
+            <span>{kecamatan !== "-" ? `Kecamatan ${kecamatan}, Sulawesi Tengah` : "Sulawesi Tengah"}</span>
           </div>
 
           <p className="mt-5 text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl font-medium">
@@ -520,10 +492,10 @@ export const SchoolLanding = () => {
         <div ref={statsRef} className="relative z-10 w-full border-t border-white/10"
           style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(20px)" }}>
           <div className="w-full max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 divide-x divide-white/10">
-            <StatCounter target={d.studentCount} label="Peserta Didik Aktif" started={statsVisible} />
-            <StatCounter target={d.totalTeachers} label="Guru & Tendik" started={statsVisible} />
-            <StatCounter target={d.rombelCount} label="Rombongan Belajar" started={statsVisible} />
-            <StatCounter target={d.certifiedPercentage} suffix="%" label="Guru Bersertifikat" started={statsVisible} />
+            <StatCounter target={studentCount} label="Peserta Didik Aktif" started={statsVisible} />
+            <StatCounter target={dayaTampung} label="Daya Tampung" started={statsVisible} />
+            <StatCounter target={rombelCount} label="Rombongan Belajar" started={statsVisible} />
+            <StatCounter target={0} suffix="" label={sekolahLoading ? "Memuat..." : `Sumber: ${sekolahData?.sumber_listrik ?? "-"}`} started={statsVisible} />
           </div>
         </div>
       </section>
@@ -561,33 +533,39 @@ export const SchoolLanding = () => {
                 <div className="flex flex-col items-center text-center gap-3 shrink-0">
                   <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-4xl shadow-2xl"
                     style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    👨‍💼
+                    {sekolahLoading ? <Loader2 className="w-8 h-8 animate-spin text-white/30" /> : "👨‍💼"}
                   </div>
                   <div>
                     <div className="text-[10px] text-white/40 uppercase tracking-wider font-black mb-1">Kepala Sekolah</div>
-                    <div className="font-black text-white text-sm leading-snug max-w-[180px]">{d.principalName}</div>
-                    <div className="mt-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase inline-block"
-                      style={{ background: `${accentColor}22`, color: accentColor, border: `1px solid ${accentColor}44` }}>
-                      {d.principalStatus}
+                    <div className="font-black text-white text-sm leading-snug max-w-[180px]">
+                      {sekolahLoading ? "Memuat..." : kepsek}
                     </div>
+                    {statusKepsek !== "-" && (
+                      <div className="mt-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase inline-block"
+                        style={{ background: `${accentColor}22`, color: accentColor, border: `1px solid ${accentColor}44` }}>
+                        {statusKepsek}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
-                    { label: "NIP", value: d.nip, icon: Shield },
-                    { label: "Kontak / WhatsApp", value: d.principalPhone, icon: Phone },
-                    { label: "Email Resmi Sekolah", value: d.email, icon: Mail },
-                    { label: "NPSN", value: d.npsn, icon: Globe },
+                    { label: "NIP Kepala Sekolah", value: nipKepsek, icon: Shield },
+                    { label: "Kontak / WhatsApp", value: hpKepsek !== "-" ? hpKepsek : telepon, icon: Phone },
+                    { label: "Email Resmi Sekolah", value: email, icon: Mail },
+                    { label: "NPSN", value: npsn, icon: Globe },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3 p-4 rounded-2xl"
                       style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <item.icon className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
                       <div className="min-w-0">
                         <div className="text-[10px] text-white/40 uppercase font-black tracking-wider">{item.label}</div>
-                        <div className="text-xs font-black text-white/90 truncate mt-0.5">{item.value}</div>
+                        <div className="text-xs font-black text-white/90 truncate mt-0.5">
+                          {sekolahLoading ? "..." : item.value}
+                        </div>
                       </div>
-                      {item.label === "NIP" && (
+                      {item.label === "NIP Kepala Sekolah" && (
                         <button onClick={copyNip} className="ml-auto shrink-0 cursor-pointer p-1.5 rounded-lg transition-all"
                           style={{ background: "rgba(255,255,255,0.06)" }}>
                           {copiedNip ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-white/40" />}
@@ -697,10 +675,10 @@ export const SchoolLanding = () => {
             {/* KPI Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { icon: Users, label: "Peserta Didik", value: d.studentCount.toLocaleString("id-ID"), sub: "Aktif TA 2025/2026", color: "#4f46e5" },
-                { icon: Layers, label: "Rombel", value: `${d.rombelCount}`, sub: "Kelompok Belajar", color: "#0891b2" },
-                { icon: Award, label: "Akreditasi", value: d.accreditation.split(" ")[0], sub: "BAN-SM Nasional", color: "#d97706" },
-                { icon: Trophy, label: "Prestasi", value: "12+", sub: "Penghargaan 2025", color: "#059669" },
+                { icon: Users, label: "Peserta Didik", value: studentCount.toLocaleString("id-ID"), sub: "Aktif TA 2025/2026", color: "#4f46e5" },
+                { icon: Layers, label: "Rombel", value: `${rombelCount}`, sub: "Kelompok Belajar", color: "#0891b2" },
+                { icon: Award, label: "Akreditasi", value: akreditasi !== "-" ? akreditasi.split(" ")[0] : "-", sub: "BAN-SM Nasional", color: "#d97706" },
+                { icon: Trophy, label: "Daya Tampung", value: dayaTampung.toLocaleString("id-ID"), sub: "Kapasitas Sekolah", color: "#059669" },
               ].map((kpi, i) => (
                 <div key={i} className="rounded-3xl p-6 flex flex-col gap-3"
                   style={{ background: `${kpi.color}15`, border: `1px solid ${kpi.color}30` }}>
@@ -719,33 +697,33 @@ export const SchoolLanding = () => {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Lulusan Trend */}
-              <div className="rounded-3xl p-8 space-y-6"
+              {/* Info Sekolah dari Dapodik */}
+              <div className="rounded-3xl p-8 space-y-5"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${accentColor}33` }}>
-                      <GraduationCap className="w-4 h-4" style={{ color: accentColor }} />
-                    </div>
-                    <h3 className="font-black text-white text-sm uppercase tracking-wider">Trend Lulusan</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${accentColor}33` }}>
+                    <GraduationCap className="w-4 h-4" style={{ color: accentColor }} />
                   </div>
-                  <span className="text-[10px] font-black text-white/40 uppercase">2021 – 2025</span>
+                  <h3 className="font-black text-white text-sm uppercase tracking-wider">Info Sekolah (Dapodik)</h3>
                 </div>
-                <BarChart
-                  data={d.lulusanData.map(l => ({ year: String(l.year), count: l.count }))}
-                  valueKey="count"
-                  labelKey="year"
-                  color={`linear-gradient(to top, ${accentColor}, ${accentColor}66)`}
-                />
-                <div className="flex items-center gap-4 text-xs text-white/50 font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm inline-block" style={{ background: accentColor }} />
-                    Jumlah Lulusan
-                  </span>
+                <div className="space-y-3">
+                  {[
+                    { label: "Bentuk Pendidikan", value: sekolahData?.bentuk_pendidikan ?? "-" },
+                    { label: "Status", value: sekolahData?.status_sekolah ?? "-" },
+                    { label: "Waktu Penyelenggaraan", value: sekolahData?.waktu_penyelenggaraan ?? "-" },
+                    { label: "Akses Internet", value: sekolahData?.akses_internet ?? "-" },
+                    { label: "Sumber Listrik", value: sekolahData?.sumber_listrik ?? "-" },
+                    { label: "Semester ID", value: sekolahData?.semester_id ?? "-" },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/05 last:border-0">
+                      <span className="text-xs font-bold text-white/50 uppercase tracking-wider">{row.label}</span>
+                      <span className="text-xs font-black text-white/80">{sekolahLoading ? "..." : row.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* PTN Intake */}
+              {/* Kapasitas & Siswa */}
               <div className="rounded-3xl p-8 space-y-6"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="flex items-center justify-between">
@@ -753,56 +731,62 @@ export const SchoolLanding = () => {
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#0891b233" }}>
                       <Target className="w-4 h-4 text-cyan-400" />
                     </div>
-                    <h3 className="font-black text-white text-sm uppercase tracking-wider">Siswa Masuk PTN</h3>
+                    <h3 className="font-black text-white text-sm uppercase tracking-wider">Kapasitas & Siswa</h3>
                   </div>
-                  <span className="text-[10px] font-black text-white/40 uppercase">5 Tahun Terakhir</span>
                 </div>
-                <BarChart
-                  data={d.lulusanData.map(l => ({ year: String(l.year), count: l.ptn }))}
-                  valueKey="count"
-                  labelKey="year"
-                  color="linear-gradient(to top, #0891b2, #06b6d444)"
-                />
-                <div className="flex items-center gap-4 text-xs text-white/50 font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm inline-block bg-cyan-500" />
-                    Diterima PTN/Kedinasan
-                  </span>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-bold text-white/70">Jumlah Siswa</span>
+                      <span className="font-black text-white">{studentCount.toLocaleString("id-ID")}</span>
+                    </div>
+                    <div className="w-full h-3 rounded-full bg-white/10">
+                      <div className="h-3 rounded-full bg-blue-500 transition-all duration-700"
+                        style={{ width: dayaTampung > 0 ? `${Math.min((studentCount / dayaTampung) * 100, 100)}%` : "0%" }} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-bold text-white/70">Daya Tampung</span>
+                      <span className="font-black text-white">{dayaTampung.toLocaleString("id-ID")}</span>
+                    </div>
+                    <div className="w-full h-3 rounded-full bg-white/10">
+                      <div className="h-3 rounded-full bg-emerald-500 transition-all duration-700" style={{ width: "100%" }} />
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-2xl mt-4" style={{ background: "rgba(255,255,255,0.04)" }}>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Tingkat Kepenuhan</div>
+                    <div className="text-2xl font-black text-white">
+                      {dayaTampung > 0 ? `${Math.round((studentCount / dayaTampung) * 100)}%` : "-"}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Proyeksi Siswa */}
+            {/* Proyeksi Kapasitas */}
             <div className="rounded-3xl p-8 space-y-6"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#05966933" }}>
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
                 </div>
-                <h3 className="font-black text-white text-sm uppercase tracking-wider">Proyeksi Kapasitas Siswa</h3>
-                <span className="ml-auto text-[10px] font-black text-white/40 uppercase">2025 – 2027</span>
+                <h3 className="font-black text-white text-sm uppercase tracking-wider">Kapasitas Terkini</h3>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                {d.proyeksiSiswa.map((p, i) => (
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "Jumlah Siswa", value: studentCount, color: accentColor },
+                  { label: "Daya Tampung", value: dayaTampung, color: "#059669" },
+                ].map((p, i) => (
                   <div key={i} className="rounded-2xl p-5 text-center relative overflow-hidden"
-                    style={{
-                      background: i === 0 ? `${accentColor}20` : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${i === 0 ? accentColor + "40" : "rgba(255,255,255,0.06)"}`,
-                    }}>
-                    {i > 0 && (
-                      <div className="absolute top-3 right-3 flex items-center gap-0.5 text-[9px] font-black text-emerald-400">
-                        <TrendingUp className="w-3 h-3" />
-                        Proyeksi
-                      </div>
-                    )}
-                    <div className="text-2xl font-black text-white">{p.count}</div>
-                    <div className="text-[10px] font-bold text-white/50 uppercase mt-1">Siswa {p.year}</div>
-                    {i === 0 && <div className="text-[9px] font-black mt-1" style={{ color: accentColor }}>AKTUAL</div>}
+                    style={{ background: i === 0 ? `${accentColor}20` : "rgba(5,150,105,0.1)", border: `1px solid ${p.color}30` }}>
+                    <div className="text-2xl font-black text-white">{p.value.toLocaleString("id-ID")}</div>
+                    <div className="text-[10px] font-bold text-white/50 uppercase mt-1">{p.label}</div>
                   </div>
                 ))}
               </div>
               <p className="text-xs text-white/30 font-medium">
-                * Proyeksi berdasarkan tren pertumbuhan siswa 5 tahun terakhir dan data PPDB daerah.
+                * Data bersumber dari Dapodik Kementerian Pendidikan, Kebudayaan, Riset dan Teknologi.
               </p>
             </div>
 
@@ -847,7 +831,7 @@ export const SchoolLanding = () => {
                     { label: "Target PPDB 2026/2027", progress: 65, target: "350 Siswa Baru" },
                     { label: "Kapasitas Lab Komputer", progress: 80, target: "80 Unit Tersedia" },
                     { label: "Konversi Digital Arsip", progress: 42, target: "42% Terdigitasi" },
-                    { label: "Guru Terlatih Kurikulum Merdeka", progress: d.certifiedPercentage, target: `${d.certifiedPercentage}% Terpenuhi` },
+                    { label: "Tingkat Kepenuhan Siswa", progress: dayaTampung > 0 ? Math.min(Math.round((studentCount / dayaTampung) * 100), 100) : 0, target: `${dayaTampung > 0 ? Math.min(Math.round((studentCount / dayaTampung) * 100), 100) : 0}% Terisi` },
                   ].map((item, i) => (
                     <div key={i} className="space-y-1.5">
                       <div className="flex justify-between text-xs">
@@ -871,134 +855,74 @@ export const SchoolLanding = () => {
         {activeSection === "gtk" && (
           <div className="space-y-8 animate-fadeIn">
 
-            {/* GTK KPIs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Total GTK", value: d.totalTeachers, icon: "👨‍🏫", color: accentColor },
-                { label: "Guru PNS", value: d.pnsCount, icon: "🏛️", color: "#0891b2" },
-                { label: "Guru Honorer/PPPK", value: d.nonPnsCount, icon: "📋", color: "#d97706" },
-                { label: "Bersertifikasi", value: `${d.certifiedPercentage}%`, icon: "🎓", color: "#059669" },
-              ].map((k, i) => (
-                <div key={i} className="rounded-3xl p-6 text-center space-y-2"
-                  style={{ background: `${k.color}15`, border: `1px solid ${k.color}30` }}>
-                  <span className="text-3xl">{k.icon}</span>
-                  <div className="text-2xl font-black text-white">{k.value}</div>
-                  <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: k.color }}>{k.label}</div>
+            {/* Info: data GTK per-sekolah belum tersedia */}
+            <div className="rounded-3xl p-6 flex items-center gap-4"
+              style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)" }}>
+              <Activity className="w-5 h-5 text-amber-400 shrink-0" />
+              <div>
+                <div className="text-sm font-black text-amber-300">Data GTK Per-Sekolah</div>
+                <div className="text-xs text-amber-200/70 mt-0.5">
+                  Data distribusi guru, status kepegawaian, dan kualifikasi per-sekolah akan tersedia setelah integrasi penuh dengan layanan GTK (api_ptk). Saat ini menampilkan data yang tersedia dari Dapodik.
                 </div>
-              ))}
+              </div>
             </div>
 
-            {/* Distribusi GTK */}
+            {/* Data dari Dapodik yang tersedia */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="rounded-3xl p-8 space-y-6"
+              <div className="rounded-3xl p-8 space-y-5"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="flex items-center gap-3">
                   <Activity className="w-5 h-5" style={{ color: accentColor }} />
-                  <h3 className="font-black text-white text-sm uppercase tracking-wider">Distribusi Status GTK</h3>
+                  <h3 className="font-black text-white text-sm uppercase tracking-wider">Data Sekolah (Dapodik)</h3>
                 </div>
-                <div className="space-y-5">
+                <div className="space-y-3">
                   {[
-                    { label: "Guru PNS", count: d.pnsCount, total: d.totalTeachers, color: accentColor },
-                    { label: "Guru Honorer / PPPK", count: d.nonPnsCount, total: d.totalTeachers, color: "#0891b2" },
-                    { label: "Guru Bersertifikat", count: Math.round(d.totalTeachers * d.certifiedPercentage / 100), total: d.totalTeachers, color: "#059669" },
-                    { label: "Linier Bidang Ajar", count: Math.round(d.totalTeachers * 0.96), total: d.totalTeachers, color: "#d97706" },
-                  ].map((item, i) => {
-                    const pct = Math.round((item.count / item.total) * 100);
-                    return (
-                      <div key={i} className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="font-bold text-white/70">{item.label}</span>
-                          <span className="font-black text-white/80">{item.count} Guru <span className="text-white/40">({pct}%)</span></span>
-                        </div>
-                        <div className="w-full h-2 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
-                          <div className="h-2 rounded-full transition-all duration-700"
-                            style={{ width: `${pct}%`, background: item.color }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="p-4 rounded-2xl" style={{ background: `${d.abkColor.bg}22`, border: `1px solid ${d.abkColor.text}33` }}>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Status ABK (Analisis Beban Kerja)</div>
-                  <div className="text-sm font-black uppercase" style={{ color: d.abkColor.text }}>{d.abkStatus}</div>
+                    { label: "NPSN", value: npsn },
+                    { label: "Status Sekolah", value: sekolahData?.status_sekolah ?? "-" },
+                    { label: "Akreditasi", value: akreditasi },
+                    { label: "Jumlah Siswa", value: studentCount > 0 ? studentCount.toLocaleString("id-ID") : "-" },
+                    { label: "Daya Tampung", value: dayaTampung > 0 ? dayaTampung.toLocaleString("id-ID") : "-" },
+                    { label: "Akses Internet", value: sekolahData?.akses_internet ?? "-" },
+                    { label: "Wilayah 3T", value: is3T ? "Ya" : "Tidak" },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/05 last:border-0">
+                      <span className="text-xs font-bold text-white/50 uppercase tracking-wider">{row.label}</span>
+                      <span className="text-xs font-black text-white/80">
+                        {sekolahLoading ? "..." : row.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Kualifikasi Pendidikan */}
-              <div className="rounded-3xl p-8 space-y-6"
+              <div className="rounded-3xl p-8 space-y-5"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="flex items-center gap-3">
-                  <BookMarked className="w-5 h-5" style={{ color: accentColor }} />
-                  <h3 className="font-black text-white text-sm uppercase tracking-wider">Kualifikasi Pendidikan</h3>
+                  <UserCheck className="w-5 h-5" style={{ color: accentColor }} />
+                  <h3 className="font-black text-white text-sm uppercase tracking-wider">Kepala Sekolah</h3>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
-                    { label: "S2 / Magister", pct: 15, count: Math.round(d.totalTeachers * 0.15), color: "#7c3aed" },
-                    { label: "S1 / Sarjana", pct: 80, count: Math.round(d.totalTeachers * 0.80), color: accentColor },
-                    { label: "Diploma / Lainnya", pct: 5, count: Math.round(d.totalTeachers * 0.05), color: "#64748b" },
-                  ].map((edu, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black"
-                        style={{ background: `${edu.color}22`, color: edu.color }}>
-                        {edu.pct}%
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="font-bold text-white/70">{edu.label}</span>
-                          <span className="font-black text-white/60">{edu.count} Guru</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
-                          <div className="h-2 rounded-full" style={{ width: `${edu.pct}%`, background: edu.color }} />
-                        </div>
-                      </div>
+                    { label: "Nama", value: kepsek },
+                    { label: "NIP", value: nipKepsek },
+                    { label: "No. HP", value: hpKepsek !== "-" ? hpKepsek : telepon },
+                    { label: "Status", value: statusKepsek },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/05 last:border-0">
+                      <span className="text-xs font-bold text-white/50 uppercase tracking-wider">{row.label}</span>
+                      <span className="text-xs font-black text-white/80">
+                        {sekolahLoading ? "..." : row.value}
+                      </span>
                     </div>
                   ))}
                 </div>
 
-                {/* Data Integritas Info */}
-                <div className="space-y-2 pt-4 border-t border-white/05">
-                  {[
-                    "Data bersumber dari integrasi Dapodik dan sistem kepegawaian ASN Smart.",
-                    "Pembaruan status linier mengajar divalidasi setiap awal semester."
-                  ].map((info, i) => (
-                    <div key={i} className="flex items-start gap-2 text-[10px] font-medium text-white/40 leading-relaxed">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{info}</span>
-                    </div>
-                  ))}
+                <div className="p-4 rounded-2xl mt-2"
+                  style={{ background: `${accentColor}15`, border: `1px solid ${accentColor}30` }}>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Sumber Data</div>
+                  <div className="text-xs font-bold text-white/70">Dapodik (Data Pokok Pendidikan)</div>
+                  <div className="text-[10px] text-white/40 mt-0.5">Semester {sekolahData?.semester_id ?? "-"}</div>
                 </div>
-              </div>
-            </div>
-
-            {/* Kepala Sekolah Timeline Detail */}
-            <div className="rounded-3xl p-8 space-y-5"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <div className="flex items-center gap-3">
-                <UserCheck className="w-5 h-5" style={{ color: accentColor }} />
-                <h3 className="font-black text-white text-sm uppercase tracking-wider">Riwayat Kepemimpinan</h3>
-              </div>
-              <div className="flex gap-6 overflow-x-auto pb-2">
-                {[
-                  { year: "2020 – 2023", name: "Drs. H. Kamaruddin, M.Pd.", status: "Purnabakti" },
-                  { year: "2023 – Sekarang", name: d.principalName, status: "Aktif" },
-                ].map((leader, i) => (
-                  <div key={i} className="flex-1 min-w-[200px] p-5 rounded-2xl relative"
-                    style={{
-                      background: i === 1 ? `${accentColor}15` : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${i === 1 ? accentColor + "40" : "rgba(255,255,255,0.05)"}`
-                    }}>
-                    <div className="text-[10px] font-black uppercase tracking-wider text-white/40">{leader.year}</div>
-                    <div className="text-sm font-black text-white/90 mt-1 leading-snug">{leader.name}</div>
-                    <span className="mt-2 inline-block px-2 py-0.5 rounded-full text-[9px] font-black"
-                      style={{
-                        background: i === 1 ? `${accentColor}33` : "rgba(255,255,255,0.08)",
-                        color: i === 1 ? accentColor : "rgba(255,255,255,0.4)"
-                      }}>
-                      {leader.status}
-                    </span>
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -1115,7 +1039,7 @@ export const SchoolLanding = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 text-[10px] font-bold text-white/30 uppercase tracking-wider">
-            <span>NPSN: {d.npsn}</span>
+            <span>NPSN: {npsn}</span>
             <span>•</span>
             <span>Data valid per TA 2025/2026</span>
             <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-white/50 hover:text-white transition-colors cursor-pointer">

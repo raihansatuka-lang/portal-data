@@ -7,12 +7,10 @@ import { GtkDrilldownSidebar } from "@/components/Fragments/GtkDrilldownSidebar"
 import type { DetailData, GtkLandingData } from "@/types";
 import { PortalHeroSection } from "@/components/Sections/PortalHeroSection";
 import { GtkDetailSidebar } from "@/components/Analytics/GtkDetailSidebar";
-import { NeracaSidebar } from "@/components/Fragments/NeracaSidebar";
 import { CategoryProjectionSidebar } from "@/components/Fragments/CategoryProjectionSidebar";
 import { SchoolReportSidebar } from "@/components/Fragments/SchoolReportSidebar";
 import { JatuhTempoSidebar } from "@/components/Fragments/JatuhTempoSidebar";
 import { RegionProjectionSidebar } from "@/components/Fragments/RegionProjectionSidebar";
-import { BantuanSidebar } from "@/components/Fragments/BantuanSidebar";
 
 interface DashboardLayoutProps {
   landingData?: GtkLandingData;
@@ -39,7 +37,6 @@ export const DashboardLayout = ({
   onProyeksiFilterChange,
   proyeksiLoading,
 }: DashboardLayoutProps) => {
-  console.log(portalData);
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
   const [detailData, setDetailData] = useState<DetailData | null>(null);
   const [activeDetail, setActiveDetail] = useState<{
@@ -50,9 +47,7 @@ export const DashboardLayout = ({
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [isServiceDetailOpen, setIsServiceDetailOpen] = useState(false);
   const [isDrilldownOpen, setIsDrilldownOpen] = useState(false);
-  const [isNeracaOpen, setIsNeracaOpen] = useState(false);
   const [isSchoolReportsOpen, setIsSchoolReportsOpen] = useState(false);
-  const [isBantuanOpen, setIsBantuanOpen] = useState(false);
 
   // Projection Sidebars State
   const [selectedCabdisForSummary, setSelectedCabdisForSummary] =
@@ -97,8 +92,8 @@ export const DashboardLayout = ({
     onProyeksiFilterChange?.("monthly", monthNum);
   };
 
-  const handleOpenRegionDetail = (marker: any) => {
-    console.log("Region clicked:", marker);
+  const handleOpenRegionDetail = (_marker: any) => {
+    // Handler ini akan dipakai nanti untuk membuka detail wilayah
   };
 
   const handleOpenCategoryDetail = (category: string) => {
@@ -192,25 +187,11 @@ export const DashboardLayout = ({
         currentMonth={currentMonth}
       />
 
-      <NeracaSidebar
-        isOpen={isNeracaOpen}
-        onClose={() => setIsNeracaOpen(false)}
-        initialNeracaData={portalData?.neraca}
-        initialNeracaRekapData={portalData?.neracaRekap}
-      />
-
-      <BantuanSidebar
-        isOpen={isBantuanOpen}
-        onClose={() => setIsBantuanOpen(false)}
-      />
-
       {/* 2. Main content fix: Tambahkan 'z-10' agar semua komponen di dalamnya ditarik ke atas background */}
-      <main className="w-full bg-transparent min-h-screen relative z-10 overflow-hidden">
+      <main className="w-full bg-transparent min-h-screen relative z-10 overflow-x-hidden">
         <PortalHeroSection
           portalData={portalData}
           onViewRegionDetail={handleOpenRegionDetail}
-          onOpenNeraca={() => setIsNeracaOpen(true)}
-          onOpenBantuan={() => setIsBantuanOpen(true)}
           onProyeksiFilterChange={onProyeksiFilterChange}
           onOpenProyeksiDetail={handleOpenCategoryDetail}
           onOpenJatuhTempoDetail={handleOpenJatuhTempoDetail}

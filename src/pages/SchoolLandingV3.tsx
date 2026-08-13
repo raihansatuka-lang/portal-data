@@ -63,9 +63,9 @@ export const SchoolLandingV3 = () => {
   const hpKepsek     = sekolahData?.detailSma?.no_hp_kepsek ?? null;
   const statusKepsek = sekolahData?.detailSma?.status_kepsek ?? "-";
 
-  // Komposisi guru dari detailSma (hanya jika ada polygon — indikator data lengkap)
-  const pnsCount    = 0; // belum tersedia dari backend
-  const totalTeachers = 0;
+  // Komposisi guru dari detailSma (belum tersedia dari backend, akan diisi nanti)
+  // const pnsCount = 0;
+  // const totalTeachers = 0;
 
   const [scrolled, setScrolled] = useState(false);
 

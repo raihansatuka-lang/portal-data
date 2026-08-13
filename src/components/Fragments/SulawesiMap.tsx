@@ -3,9 +3,9 @@ import { MapContainer, GeoJSON, Marker, Tooltip, Popup, useMap } from "react-lea
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
-import { PemetaanService } from "@/services/pemetaanService";
 
-import indonesiaGeoData from "@/assets/geojson/indonesia-provinces.json";
+// indonesia-provinces.json TIDAK di-import sebagai module agar tidak masuk bundle.
+// Akan di-fetch secara lazy dari /public saat komponen mount.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MapProps {
@@ -224,44 +224,39 @@ export const SulawesiMap: React.FC<MapProps> = ({
   selectedSchool,
 }) => {
   const navigate = useNavigate();
+  const [indonesiaGeo, setIndonesiaGeo]   = useState<any>(null);
   const [cabdisGeoData, setCabdisGeoData] = useState<Record<number, any>>({});
   const [sultengGeo, setSultengGeo]       = useState<any>(null);
   const [activeKode, setActiveKode]       = useState<string | null>(null);
   const [hoveredKode, setHoveredKode]     = useState<string | null>(null);
 
-  // Load geojson
+  // ── Load GeoJSON secara lazy dari /public (tidak masuk JS bundle) ──────────
   useEffect(() => {
-    fetch("/geojson/sulteng.geojson")
+    // 1. Background Indonesia — selalu dibutuhkan
+    fetch("/geojson/base/indonesia-provinces.json")
       .then((r) => r.json())
-      .then(setSultengGeo)
+      .then(setIndonesiaGeo)
       .catch(console.error);
 
-    const loadCabdis = async () => {
-      const data: Record<number, any> = {};
-      for (let i = 1; i <= 6; i++) {
-        try {
-          const res = await fetch(`/geojson/cabdis/cabdis${i}.geojson`);
-          data[i] = await res.json();
-        } catch {/* skip */}
-      }
-      setCabdisGeoData(data);
-    };
-    loadCabdis();
-  }, []);
-
-  const [fallbackStats, setFallbackStats] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (!kabupatenStats || kabupatenStats.length === 0) {
-      PemetaanService.getStatistikKabupaten()
-        .then((res) => {
-          if (res?.data) setFallbackStats(res.data);
-        })
+    // 2. Peta Sulawesi Tengah per kabupaten — hanya untuk dashboard utama
+    if (!onlyShowId) {
+      fetch("/geojson/sulteng-light.geojson")
+        .then((r) => r.json())
+        .then(setSultengGeo)
         .catch(console.error);
     }
-  }, [kabupatenStats]);
 
-  const effectiveStats = (kabupatenStats && kabupatenStats.length > 0) ? kabupatenStats : fallbackStats;
+    // 3. GeoJSON detail cabdis — HANYA difetch saat halaman detail cabdis
+    //    (onlyShowId ada), bukan di dashboard utama
+    if (onlyShowId) {
+      fetch(`/geojson/cabdis/cabdis${onlyShowId}.geojson`)
+        .then((r) => r.json())
+        .then((geo) => setCabdisGeoData({ [onlyShowId]: geo }))
+        .catch(console.error);
+    }
+  }, [onlyShowId]);
+
+  const effectiveStats = (kabupatenStats && kabupatenStats.length > 0) ? kabupatenStats : [];
 
   // Konversi kode backend (6-digit Kemendikbud) → kode BPS (4-digit GeoJSON)
   const BACKEND_TO_BPS: Record<string, string> = {
@@ -304,7 +299,7 @@ export const SulawesiMap: React.FC<MapProps> = ({
     }
   });
 
-  const mapCenter: [number, number] = customCenter ?? [-1.20, 121.0];
+  const mapCenter: [number, number] = customCenter ?? [-2.00, 121.0];
   const mapZoom   = customZoom ?? 7.6;
   const isInteractive = !!onlyShowId;
 
@@ -354,15 +349,17 @@ export const SulawesiMap: React.FC<MapProps> = ({
         <PanToActiveKabupaten activeKode={activeKode} defaultCenter={mapCenter} />
 
         {/* ── BASE: Peta Indonesia abu-abu ── */}
-        {layer === "base" && (
-          <GeoJSON data={indonesiaGeoData as any} style={baseStyle} interactive={false} />
+        {layer === "base" && indonesiaGeo && (
+          <GeoJSON data={indonesiaGeo as any} style={baseStyle} interactive={false} />
         )}
 
         {/* ── INTERACTIVE ── */}
         {layer === "interactive" && (
           <>
             {/* Background Indonesia */}
-            <GeoJSON data={indonesiaGeoData as any} style={baseStyle} interactive={false} />
+            {indonesiaGeo && (
+              <GeoJSON data={indonesiaGeo as any} style={baseStyle} interactive={false} />
+            )}
 
             {/* ━━━ DASHBOARD UTAMA: polygon per kabupaten ━━━ */}
             {!onlyShowId && sultengGeo && (

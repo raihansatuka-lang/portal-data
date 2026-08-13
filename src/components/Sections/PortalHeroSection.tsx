@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SulawesiMap, CABDIS_CONFIG } from "../Fragments/SulawesiMap";
 import { ProyeksiCard } from "./ProyeksiCardSection";
 import { PortalDataCards } from "./PortalCardSection";
+import { GeneralDataSection } from "./GeneralDataSection";
 
 interface Props {
   portalData: any;
@@ -10,7 +11,9 @@ interface Props {
   onProyeksiFilterChange?: (range: "monthly" | "yearly", month?: number) => void;
   onOpenProyeksiDetail?: (category: string) => void;
   onOpenJatuhTempoDetail?: (category: string) => void;
+  onOpenSchoolReports?: () => void;
   proyeksiLoading?: boolean;
+  currentMonth?: string;
 }
 
 // ─── Legend Cabdis ────────────────────────────────────────────────────────────
@@ -42,7 +45,9 @@ export const PortalHeroSection: React.FC<Props> = ({
   onProyeksiFilterChange,
   onOpenProyeksiDetail,
   onOpenJatuhTempoDetail,
+  onOpenSchoolReports,
   proyeksiLoading,
+  currentMonth,
 }) => {
   const navigate = useNavigate();
 
@@ -59,8 +64,6 @@ export const PortalHeroSection: React.FC<Props> = ({
     const num = slug.replace("cabdis-", "");
     navigate(`/${slug}?name=${encodeURIComponent(`Wilayah ${num}`)}`);
   };
-
-  const schoolSummary = portalData?.school_reports;
 
   return (
     <section className="relative w-full overflow-hidden" style={{ minHeight: "100vh" }}>
@@ -87,7 +90,7 @@ export const PortalHeroSection: React.FC<Props> = ({
       ════════════════════════════════════════════════════════════════════ */}
       <div className="absolute left-6 top-24 z-30 w-[280px] xl:w-[300px] hidden lg:block">
         <ProyeksiCard
-          jenjangStats={portalData?.jenjangStats ?? []}
+          smaProvinsiStats={portalData?.smaProvinsiStats}
           isLoading={proyeksiLoading}
         />
       </div>
@@ -103,9 +106,11 @@ export const PortalHeroSection: React.FC<Props> = ({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          LAYER 4 — Spacer untuk mengalokasikan ruang peta (push konten ke bawah)
+          LAYER 4 — Spacer: tinggi disesuaikan agar Legend Cabdis dan Matriks
+          muncul di bawah card terpanjang (kiri/kanan). Card = 680px + top-24 (96px) = 776px.
+          Pakai 850px untuk memberi jarak aman.
       ════════════════════════════════════════════════════════════════════ */}
-      <div className="relative z-0 w-full" style={{ height: "70vh", minHeight: "580px" }} aria-hidden="true" />
+      <div className="relative z-0 w-full" style={{ height: "850px" }} aria-hidden="true" />
 
       {/* ═══════════════════════════════════════════════════════════════════
           LAYER 5 — Content bawah (bisa di-scroll)
@@ -115,7 +120,7 @@ export const PortalHeroSection: React.FC<Props> = ({
         {/* Mobile cards (tampil di mobile, hidden di desktop) */}
         <div className="lg:hidden flex flex-col gap-5 px-6 pb-6">
           <ProyeksiCard
-            jenjangStats={portalData?.jenjangStats ?? []}
+            smaProvinsiStats={portalData?.smaProvinsiStats}
             isLoading={proyeksiLoading}
           />
           <PortalDataCards
@@ -132,6 +137,11 @@ export const PortalHeroSection: React.FC<Props> = ({
             </span>
             <CabdisLegend onNavigate={handleNavigateCabdis} />
           </div>
+        </div>
+
+        {/* ── Matriks Data Umum Satuan Pendidikan ── */}
+        <div className="w-full px-6 pb-8">
+          <GeneralDataSection data={portalData?.summary} />
         </div>
 
         {/* Footer */}

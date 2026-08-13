@@ -17,7 +17,10 @@ export interface PemetaanLandingData {
       total_sma: number;
       total_paud: number;
       total_3t: number;
-      semester_id: string;
+      total_negeri: number;
+      total_swasta: number;
+      total_siswa: number;
+      semester_id: string | null;
     };
     cards: {
       kabupaten: string;

@@ -41,6 +41,10 @@ export const PemetaanService = {
   getStatistikJenjang: (): Promise<StatistikJenjangResponse> =>
     api_pemetaan.get("/v1/statistik/jenjang"),
 
+  /** Statistik SMA/SMK/SLB dari tabel school_sma (kewenangan Provinsi) */
+  getStatistikSmaProvinsi: (): Promise<StatistikJenjangResponse> =>
+    api_pemetaan.get("/v1/statistik/sma-provinsi"),
+
   /** List semua cabang dinas dengan konfigurasi peta */
   getCabangDinas: (): Promise<CabangDinasResponse> =>
     api_pemetaan.get("/v1/cabang-dinas"),

@@ -65,7 +65,13 @@ export const PortalDataCards: React.FC<PortalDataCardsProps> = ({
     setLoadingStat(true);
     PemetaanService.getStatistikKabupaten()
       .then((res) => {
-        if (res?.data) setStatCards(res.data);
+        const raw = res?.data;
+        // res.data bisa berupa array atau object (Eloquent collection dari cache)
+        if (Array.isArray(raw)) {
+          setStatCards(raw);
+        } else if (raw && typeof raw === "object") {
+          setStatCards(Object.values(raw));
+        }
       })
       .catch(console.error)
       .finally(() => setLoadingStat(false));
@@ -109,7 +115,9 @@ export const PortalDataCards: React.FC<PortalDataCardsProps> = ({
   };
 
   // Urutkan card agar "Kota Palu" berada di urutan pertama
-  const sortedCards = [...statCards].sort((a, b) => {
+  // Guard: pastikan statCards adalah array (bisa null/object saat dari cache)
+  const safeCards = Array.isArray(statCards) ? statCards : Object.values(statCards ?? {});
+  const sortedCards = [...safeCards].sort((a, b) => {
     const nameA = (a.kabupaten || a.nama || "").toLowerCase();
     const nameB = (b.kabupaten || b.nama || "").toLowerCase();
     

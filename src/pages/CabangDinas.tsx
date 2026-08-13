@@ -3,7 +3,6 @@ import { useParams, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { CABANG_DATA } from "@/types";
 import type { CabangDinasItem } from "@/types";
 import { School as SchoolIcon, Search, ChevronLeft, MapPin, Eye } from "lucide-react";
-import { PortalService } from "@/services/portalService";
 import { PemetaanService } from "@/services/pemetaanService";
 import { ProyeksiCard } from "@/components/Sections/ProyeksiCardSection";
 import { GeneralDataSection } from "@/components/Sections/GeneralDataSection";
@@ -13,9 +12,7 @@ import { SchoolDetailSidebar } from "@/components/Fragments/SchoolDetailSidebar"
 
 import { CategoryProjectionSidebar } from "@/components/Fragments/CategoryProjectionSidebar";
 import { JatuhTempoSidebar } from "@/components/Fragments/JatuhTempoSidebar";
-import { NeracaSidebar } from "@/components/Fragments/NeracaSidebar";
 import { SchoolReportSidebar } from "@/components/Fragments/SchoolReportSidebar";
-import { BantuanSidebar } from "@/components/Fragments/BantuanSidebar";
 
 import { Skeleton } from "@/components/Elements/Skeleton/Skeleton";
 
@@ -76,7 +73,6 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [schoolSearch, setSchoolSearch] = useState("");
-  const [portalData, setPortalData] = useState<any>(null);
   const [selectedSchoolForMap, setSelectedSchoolForMap] = useState<any>(null);
 
   // School Detail Sidebar states
@@ -90,9 +86,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
   // Sidebar states
   const [activeCategoryDetail, setActiveCategoryDetail] = useState<string | null>(null);
   const [activeJatuhTempoDetail, setActiveJatuhTempoDetail] = useState<string | null>(null);
-  const [isNeracaOpen, setIsNeracaOpen] = useState(false);
   const [isSchoolReportsOpen, setIsSchoolReportsOpen] = useState(false);
-  const [isBantuanOpen, setIsBantuanOpen] = useState(false);
 
   // 1. Fetch detailed data when slug or projection filters change
   useEffect(() => {
@@ -121,7 +115,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
     }
   };
 
-  const fetchDetail = async (includeDetails = false) => {
+  const fetchDetail = async (_includeDetails = false) => {
     setLoading(true);
     try {
       // ✅ Pakai PemetaanService.getRegionDetail — bukan PortalService
@@ -141,11 +135,6 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
       fetchDetail();
     }
   }, [slug, shouldFetchDetails]);
-
-  const fetchLandingData = async () => {
-    // CabangDinas tidak butuh landing data global
-    setPortalData({});
-  };
 
   const handleProyeksiFilterChange = (range: "monthly" | "yearly", month?: number) => {
     setLocalRange(range);
@@ -203,19 +192,6 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
         data={data?.projections?.jatuh_tempo || {}}
         initialCategory={activeJatuhTempoDetail || "semua"}
         isLoading={loading}
-      />
-
-      <NeracaSidebar
-        isOpen={isNeracaOpen}
-        onClose={() => setIsNeracaOpen(false)}
-        initialNeracaData={portalData?.neraca}
-        initialNeracaRekapData={portalData?.neracaRekap}
-        defaultFilters={{ kabupaten_kota: regionName, cabdis_slug: slug }}
-      />
-
-      <BantuanSidebar
-        isOpen={isBantuanOpen}
-        onClose={() => setIsBantuanOpen(false)}
       />
 
       <SchoolReportSidebar
@@ -302,10 +278,6 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
             <div className="flex-[3] flex flex-col gap-6 pointer-events-none">
               <div className="w-full lg:w-1/3 pointer-events-auto">
                 <ProyeksiCard
-                  projections={data?.projections}
-                  onFilterChange={handleProyeksiFilterChange}
-                  onOpenDetail={(cat) => setActiveCategoryDetail(cat)}
-                  onOpenJatuhTempoDetail={(cat) => setActiveJatuhTempoDetail(cat)}
                   isLoading={loading}
                 />
               </div>
@@ -414,66 +386,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
           </div>
 
           {/* Bottom Area */}
-          <div className="w-full flex flex-col lg:flex-row justify-between items-start mt-10 gap-6 pointer-events-none">            {/* Neraca Buttons */}
-            <div className="flex gap-4 shrink-0 pointer-events-auto">
-              <div
-                className="w-64 p-6 rounded-[2.5rem] bg-gradient-to-br from-[#2588EB] via-[#3b82f6] to-[#10B981] text-white flex flex-col gap-4 cursor-pointer hover:scale-105 transition-transform shadow-xl shadow-blue-500/20"
-                onClick={() => setIsNeracaOpen(true)}
-              >
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-sm">Neraca Pendidikan</div>
-                  <p className="text-xs text-white/80 font-medium leading-relaxed">Data Dapodik GTK & Kepegawaian Daerah</p>
-                </div>
-                <button
-                  className="w-full py-3 bg-blue-700/30 rounded-2xl text-xs font-semibold border border-white/10 hover:bg-white/20 transition-colors mt-auto cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsNeracaOpen(true);
-                  }}
-                >
-                  Lihat Neraca
-                </button>
-              </div>
-
-              <div
-                className="w-64 p-6 rounded-[2.5rem] bg-gradient-to-b from-[#8B5CF6] to-[#A78BFA] text-white flex flex-col gap-4 cursor-pointer hover:scale-105 transition-transform shadow-xl shadow-violet-500/20"
-                onClick={() => setIsBantuanOpen(true)}
-              >
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-sm">Customer Center / Bantuan</div>
-                  <p className="text-xs text-white/80 font-medium leading-relaxed">Layanan Bantuan & SOP Pulpen</p>
-                </div>
-                <button
-                  className="w-full py-3 bg-violet-700/50 rounded-2xl text-xs font-semibold border border-white/10 hover:bg-violet-50 transition-colors mt-auto cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsBantuanOpen(true);
-                  }}
-                >
-                  Lihat Bantuan
-                </button>
-              </div>
-            </div>
+          <div className="w-full flex flex-col lg:flex-row justify-between items-start mt-10 gap-6 pointer-events-none">
 
             {/* School Progress Reports */}
             <div className="flex-1 w-full pointer-events-auto">

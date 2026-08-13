@@ -190,8 +190,6 @@ export const RegionProjectionSidebar: React.FC<
             {/* 2. Proyeksi (Left Card) */}
             <div className="w-full lg:w-[320px] shrink-0 drop-shadow-sm">
               <ProyeksiCard
-                projections={data?.projections || {}}
-                onFilterChange={handleFilterChange}
                 isLoading={loading}
               />
             </div>

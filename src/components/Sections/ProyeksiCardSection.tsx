@@ -2,17 +2,9 @@ import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { PemetaanService } from "@/services/pemetaanService";
 
 interface ProyeksiCardProps {
-  projections?: any;
-  schoolData?: any;
-  jenjangStats?: any[];          // Data dari Home.tsx agar tidak double-fetch
-  onFilterChange?: (range: "monthly" | "yearly", month?: number) => void;
-  onMonthNav?: (newMonth: string) => void;
-  onOpenDetail?: (category: string) => void;
-  onOpenJatuhTempoDetail?: (category: string) => void;
-  onOpenSchoolReports?: () => void;
+  smaProvinsiStats?: any[]; // Data SMA/SMK/SLB dari tabel school_sma (kewenangan Provinsi)
   isLoading?: boolean;
 }
 
@@ -78,42 +70,25 @@ const JENJANG_CONFIG = [
 ];
 
 export const ProyeksiCard: React.FC<ProyeksiCardProps> = ({
-  jenjangStats,
+  smaProvinsiStats,
   isLoading: externalLoading,
 }) => {
   const navigate = useNavigate();
   const [localData, setLocalData] = useState<Record<string, any>>({});
-  const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
-    // Kalau data sudah di-pass dari parent, pakai itu langsung
-    if (jenjangStats && jenjangStats.length > 0) {
+    if (smaProvinsiStats && smaProvinsiStats.length > 0) {
       const map: Record<string, any> = {};
-      jenjangStats.forEach((item: any) => {
+      smaProvinsiStats.forEach((item: any) => {
         map[item.bentuk_pendidikan] = item;
       });
       setLocalData(map);
-      return;
     }
-    // Fallback: fetch sendiri kalau prop tidak tersedia
-    setLocalLoading(true);
-    PemetaanService.getStatistikJenjang()
-      .then((res: any) => {
-        if (res?.data) {
-          const map: Record<string, any> = {};
-          res.data.forEach((item: any) => {
-            map[item.bentuk_pendidikan] = item;
-          });
-          setLocalData(map);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLocalLoading(false));
-  }, [jenjangStats]);
+  }, [smaProvinsiStats]);
 
   const jenjangData = localData;
-  const loading = localLoading;
-  const isLoadingState = loading || externalLoading;
+  const isLoadingState = externalLoading;
+  const loading = false;
 
   const handleKunjungi = () => {
     navigate("/?jenjang=sma");

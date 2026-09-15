@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,4 +31,4 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           source: "dist/*"
-          target: "/home/portal-disdik/htdocs/portal-disdik.sekolahkukeren.id"
+          target: "/home/sekolahkukeren-pemetaan-disdik/htdocs/pemetaan-disdik.sekolahkukeren.id"

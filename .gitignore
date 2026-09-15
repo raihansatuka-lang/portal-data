@@ -1,10 +1,8 @@
 # Build Output
-dist/
+# dist/
 
 # Environment Files
 .env
-.env.local
-.env*.local
 .env.production
 
 # Logs
@@ -31,7 +29,3 @@ node_modules/
 *.njsproj
 *.sln
 *.sw?
-
-# Vite
-vite.config.ts.timestamp-*
-vite.config.backup.ts

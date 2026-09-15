@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom"
 import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { CARTO_TILES } from "@/config/mapConfig";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "leaflet.markercluster";
@@ -977,7 +978,9 @@ export const KabupatenDetail = () => {
                 <SetMapView center={info.center} zoom={info.zoom} mapRef={mapRef} />
 
                 <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  url={CARTO_TILES.VOYAGER}
+                  maxZoom={20}
+                  maxNativeZoom={19}
                   opacity={0.65}
                 />
 

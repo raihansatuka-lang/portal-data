@@ -12,6 +12,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { CARTO_TILES } from '@/config/mapConfig';
 import { PortalService } from '@/services/portalService';
 import { PemetaanService } from '@/services/pemetaanService';
 import type { SekolahDetailResponse } from '@/types';
@@ -376,7 +377,7 @@ export const SchoolLanding = () => {
             style={{ width: '100%', height: '100%' }}
           >
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              url={CARTO_TILES.DARK}
             />
             {Object.entries(cabdisGeoData).map(([num, geo]) => (
               <GeoJSON

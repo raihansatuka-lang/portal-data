@@ -11,6 +11,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { CARTO_TILES } from "@/config/mapConfig";
 import { PortalService } from "@/services/portalService";
 import { ProyeksiCard } from "../Sections/ProyeksiCardSection";
 import { GeneralDataSection } from "../Sections/GeneralDataSection";
@@ -203,7 +204,7 @@ export const RegionProjectionSidebar: React.FC<
                 zoomControl={false}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                  url={CARTO_TILES.LIGHT}
                   attribution="&copy; OpenStreetMap"
                 />
                 {geoData && (

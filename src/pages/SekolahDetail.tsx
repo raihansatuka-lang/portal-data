@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { CARTO_TILES } from "@/config/mapConfig";
 import {
   MapPin,
   ExternalLink,
@@ -966,7 +967,9 @@ export const SekolahDetail = () => {
                       className="w-full h-full"
                     >
                       <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        url={CARTO_TILES.VOYAGER}
+                        maxZoom={20}
+                        maxNativeZoom={19}
                       />
                       <SetView lat={lat} lng={lng} zoom={15} mapRef={mapRef} />
                       <Marker position={[lat, lng]} icon={createSchoolMarkerIcon(jenjangColor)}>

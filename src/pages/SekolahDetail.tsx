@@ -48,8 +48,11 @@ import {
   Check,
   ArrowDown,
   Home,
+  Pencil,
 } from "lucide-react";
 import { PemetaanService } from "@/services/pemetaanService";
+import { useAuth } from "@/contexts/AuthContext";
+import { SekolahEditModal } from "@/components/Admin/SekolahEditModal";
 
 // ─── Default Dummy Sekolah (Cetak Biru Lengkap & Aman) ────────────────────────
 const DUMMY_DEFAULT_SCHOOL: Record<string, any> = {
@@ -345,6 +348,7 @@ const getRiskBadgeClass = (val?: string | null) => {
 export const SekolahDetail = () => {
   const { npsn } = useParams<{ npsn: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   // State Data
   const [data, setData] = useState<any>(null);
@@ -355,7 +359,12 @@ export const SekolahDetail = () => {
   const [activeSarprasTab, setActiveSarprasTab] = useState<string>("semua");
   const [isRaporModalOpen, setIsRaporModalOpen] = useState<boolean>(false);
   const [isDoModalOpen, setIsDoModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const mapRef = useRef<L.Map | null>(null);
+
+  const handleEditSuccess = (updatedData: any) => {
+    setData((prev: any) => (prev ? { ...prev, ...updatedData } : updatedData));
+  };
 
   // ── Smooth Scroll to Section Helper ──
   const scrollToSection = (id: string) => {
@@ -626,24 +635,36 @@ export const SekolahDetail = () => {
           </div>
         </nav>
 
-        {/* Subheader: Tombol Kembali & Judul Satuan Pendidikan */}
-        <div className="flex items-center space-x-3 text-slate-700 px-1">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Kembali"
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 shadow-xs hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm hover:-translate-y-0.5 active:scale-95 transition-all duration-150 cursor-pointer"
-            type="button"
-          >
-            <ChevronLeft className="w-4 h-4 text-slate-600" />
-          </button>
-          <div>
-            <span className="text-[10.5px] uppercase tracking-wider font-extrabold text-blue-600 block">
-              DETAIL PROFIL SATUAN PENDIDIKAN
-            </span>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">
-              {school.nama}
-            </h1>
+        {/* Subheader: Tombol Kembali, Judul Satuan Pendidikan & Aksi Admin */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-700 px-1">
+          <div className="flex items-center space-x-3 min-w-0">
+            <button
+              onClick={() => navigate(-1)}
+              aria-label="Kembali"
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 shadow-xs hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm hover:-translate-y-0.5 active:scale-95 transition-all duration-150 cursor-pointer shrink-0"
+              type="button"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-600" />
+            </button>
+            <div className="min-w-0">
+              <span className="text-[10.5px] uppercase tracking-wider font-extrabold text-blue-600 block">
+                DETAIL PROFIL SATUAN PENDIDIKAN
+              </span>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">
+                {school.nama}
+              </h1>
+            </div>
           </div>
+
+          {isAdmin && (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl px-3.5 py-2 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer self-start sm:self-center"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit Data Sekolah</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -1204,7 +1225,7 @@ export const SekolahDetail = () => {
                     <Satellite className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Aktif / Online
+                    UPTD BLPT Disdik Prov Sulteng
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-1 group-hover:text-blue-700 transition-colors">
@@ -1231,7 +1252,7 @@ export const SekolahDetail = () => {
                     <Tv className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                    DAK Fisik TIK
+                    Distribusi Papan PID
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-1 group-hover:text-indigo-700 transition-colors">
@@ -1259,11 +1280,11 @@ export const SekolahDetail = () => {
                     <Laptop className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                    Rujukan Google
+                    UPTD BLPT Disdik Prov Sulteng
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-1 group-hover:text-amber-700 transition-colors">
-                  Google for Education & TIK
+                  BLPT for Education & TIK
                 </h4>
                 <div className="flex items-baseline gap-1 mb-2">
                   <span className="text-2xl font-black text-slate-900 group-hover:text-amber-700 transition-colors">{chromebookCount}</span>
@@ -1287,11 +1308,11 @@ export const SekolahDetail = () => {
                     <CheckCircle className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
-                    SSO Kemendikbud
+                    UPTD BLPT Disdik Prov Sulteng
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-2 group-hover:text-teal-700 transition-colors">
-                  Adopsi Akun Belajar.id
+                  Platform Konsultasi Rumah Pendidikan
                 </h4>
 
                 {/* Meter Guru */}
@@ -2103,6 +2124,14 @@ export const SekolahDetail = () => {
           }
         }
       `}</style>
+
+      {/* Modal Edit Sekolah */}
+      <SekolahEditModal
+        isOpen={isEditModalOpen}
+        npsn={npsn ?? null}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 };

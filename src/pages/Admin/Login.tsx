@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn, ArrowLeft } from "lucide-react";
 
 export const AdminLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const from = (location.state as any)?.from?.pathname || "/";
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +22,7 @@ export const AdminLogin = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/admin");
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err?.data?.message ?? err?.message ?? "Email atau password salah.");
     } finally {
@@ -85,6 +88,15 @@ export const AdminLogin = () => {
             <h1 className="text-lg font-black text-slate-800">Portal Admin</h1>
             <p className="text-slate-400 text-sm">Dinas Pendidikan Sulteng</p>
           </div>
+
+          {/* Back to Home Link */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors mb-6 group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Kembali ke Beranda</span>
+          </Link>
 
           {/* Judul form */}
           <div className="mb-8">

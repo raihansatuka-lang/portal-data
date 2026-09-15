@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createSchoolPopupHtml } from "@/utils/schoolPopup";
 import { GeneralDataSection } from "@/components/Sections/GeneralDataSection";
 import { DeleteConfirmModal } from "@/components/Admin/DeleteConfirmModal";
+import { SekolahEditModal } from "@/components/Admin/SekolahEditModal";
 import type { SekolahMarker } from "@/types";
 
 // ─── Jenjang Kewenangan Provinsi ──────────────────────────────────────────────
@@ -342,6 +343,17 @@ export const ProvinsiDetail = () => {
   const { isAdmin } = useAuth();
   const [deleteTarget, setDeleteTarget] = useState<SekolahMarker | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editTargetNpsn, setEditTargetNpsn] = useState<string | null>(null);
+
+  const handleEditSuccess = (updatedData: any) => {
+    if (!editTargetNpsn) return;
+    setAllSekolah((prev) =>
+      prev.map((s) => (s.npsn === editTargetNpsn ? { ...s, ...updatedData } : s))
+    );
+    if (selectedSchool?.npsn === editTargetNpsn) {
+      setSelectedSchool((prev: any) => (prev ? { ...prev, ...updatedData } : null));
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget?.npsn) return;
@@ -676,7 +688,7 @@ export const ProvinsiDetail = () => {
             <div className="flex items-center gap-2.5 shrink-0 z-10">
               {isAdmin && (
                 <button
-                  onClick={() => navigate("/admin/sekolah/create")}
+                  onClick={() => navigate("/admin/sekolah/create?from=/provinsi")}
                   className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -1334,7 +1346,7 @@ export const ProvinsiDetail = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (school.npsn) navigate(`/admin/sekolah/${school.npsn}/edit`);
+                            if (school.npsn) setEditTargetNpsn(school.npsn);
                           }}
                           className="flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-[9px] font-bold uppercase tracking-wider border border-blue-200 cursor-pointer"
                         >
@@ -1489,6 +1501,14 @@ export const ProvinsiDetail = () => {
         loading={deleting}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* Modal Edit Sekolah */}
+      <SekolahEditModal
+        isOpen={!!editTargetNpsn}
+        npsn={editTargetNpsn}
+        onClose={() => setEditTargetNpsn(null)}
+        onSuccess={handleEditSuccess}
       />
 
       <style>{`

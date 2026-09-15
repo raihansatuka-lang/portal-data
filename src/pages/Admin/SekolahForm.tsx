@@ -1,11 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminService, type SekolahFormData } from "@/services/adminService";
+import { useAuth } from "@/contexts/AuthContext";
 import { ChevronLeft, Save, Loader2 } from "lucide-react";
 
 // ─── Konstanta ────────────────────────────────────────────────────────────────
 
 const JENJANG_OPTIONS = ["TK", "KB", "SPS", "TPA", "RA", "SD", "MI", "SMP", "MTs", "SMA", "MA", "SMK", "SLB", "PKBM", "SKB"];
+
+const CABDIS_KABUPATEN: Record<number, string[]> = {
+  1: ["7271", "7210"],         // Palu, Sigi
+  2: ["7208", "7203"],         // Parigi Moutong, Donggala
+  3: ["7202", "7209"],         // Poso, Tojo Una-Una
+  4: ["7206", "7212"],         // Morowali, Morowali Utara
+  5: ["7201", "7207", "7211"], // Banggai, Bangkep, Balut
+  6: ["7204", "7205"],         // Tolitoli, Buol
+};
 
 const KABUPATEN_OPTIONS = [
   { kode: "7271", nama: "Kota Palu" },
@@ -50,23 +60,57 @@ export const AdminSekolahForm = () => {
   const navigate  = useNavigate();
   const { npsn }  = useParams<{ npsn: string }>();
   const isEdit    = !!npsn;
+  const { user }  = useAuth();
 
   const [form, setForm]         = useState<SekolahFormData>(EMPTY_FORM);
   const [errors, setErrors]     = useState<Record<string, string>>({});
   const [loading, setLoading]   = useState(false);
   const [fetching, setFetching] = useState(isEdit);
 
-  // Track asal kabupaten untuk back navigation
+  // Track asal kabupaten/halaman untuk back navigation
   const [backUrl, setBackUrl] = useState<string>("/");
 
-  // Load data untuk mode edit
+  // Periksa batasan role user
+  const role = user?.role || user?.roles?.[0] || "";
+  const isKabLocked = role === "admin_kab_kota" && !!user?.kode_kabupaten;
+
+  // Filter pilihan kabupaten sesuai kewenangan akun
+  const availableKabupaten = useMemo(() => {
+    return KABUPATEN_OPTIONS.filter((k) => {
+      if (role === "admin_kab_kota" && user?.kode_kabupaten) {
+        return k.kode === user.kode_kabupaten;
+      }
+      if (role === "admin_cabdis" && user?.cabang_dinas_id) {
+        const allowed = CABDIS_KABUPATEN[user.cabang_dinas_id] ?? [];
+        return allowed.includes(k.kode);
+      }
+      return true;
+    });
+  }, [role, user]);
+
+  // Sync kabupaten name when kode changes
+  const handleKodeKabupaten = (kode: string) => {
+    const found = KABUPATEN_OPTIONS.find(k => k.kode === kode);
+    setForm(f => ({ ...f, kode_kabupaten: kode, kabupaten: found?.nama ?? f.kabupaten }));
+  };
+
+  // Load data untuk mode edit atau inisialisasi mode create
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fromParam = params.get("from");
+    const kodeKab = params.get("kode_kabupaten");
+
     if (!isEdit) {
-      // Mode create: detect backUrl dari query param
-      const params = new URLSearchParams(window.location.search);
-      const kodeKab = params.get("kode_kabupaten");
-      if (kodeKab) {
+      if (fromParam) {
+        setBackUrl(fromParam);
+      } else if (kodeKab) {
         setBackUrl(`/kabupaten/${kodeKab}`);
+      }
+
+      // Pre-fill kabupaten jika ada dari URL atau jika role terkunci ke 1 kabupaten
+      const initialKode = kodeKab || (isKabLocked ? user?.kode_kabupaten : null);
+      if (initialKode) {
+        handleKodeKabupaten(initialKode);
       }
       return;
     }
@@ -96,25 +140,20 @@ export const AdminSekolahForm = () => {
           is_sekolah_alam:    !!d.is_sekolah_alam,
         });
 
-        // Set backUrl berdasarkan kode_kabupaten sekolah
-        const kodeKab = d.kode_kabupaten;
-        if (kodeKab) {
-          setBackUrl(`/kabupaten/${kodeKab}`);
+        // Set backUrl berdasarkan query param from atau kode_kabupaten sekolah
+        if (fromParam) {
+          setBackUrl(fromParam);
+        } else if (d.kode_kabupaten) {
+          setBackUrl(`/kabupaten/${d.kode_kabupaten}`);
         }
       })
       .catch(() => alert("Gagal memuat data sekolah."))
       .finally(() => setFetching(false));
-  }, [npsn, isEdit]);
+  }, [npsn, isEdit, isKabLocked, user]);
 
   const set = (field: keyof SekolahFormData, value: any) => {
     setForm(f => ({ ...f, [field]: value }));
     setErrors(e => { const copy = { ...e }; delete copy[field]; return copy; });
-  };
-
-  // Sync kabupaten name when kode changes
-  const handleKodeKabupaten = (kode: string) => {
-    const found = KABUPATEN_OPTIONS.find(k => k.kode === kode);
-    setForm(f => ({ ...f, kode_kabupaten: kode, kabupaten: found?.nama ?? f.kabupaten }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,11 +275,20 @@ export const AdminSekolahForm = () => {
             </Field>
 
             <Field label="Kabupaten/Kota" required>
-              <select className={inputCls} value={form.kode_kabupaten} onChange={e => handleKodeKabupaten(e.target.value)} required>
+              <select
+                className={inputCls}
+                value={form.kode_kabupaten}
+                onChange={e => handleKodeKabupaten(e.target.value)}
+                required
+                disabled={isKabLocked}
+              >
                 <option value="">- Pilih Kabupaten -</option>
-                {KABUPATEN_OPTIONS.map(k => <option key={k.kode} value={k.kode}>{k.nama}</option>)}
+                {availableKabupaten.map(k => <option key={k.kode} value={k.kode}>{k.nama}</option>)}
               </select>
               {errors.kode_kabupaten && <p className="text-[11px] text-red-500 font-semibold">{errors.kode_kabupaten}</p>}
+              {isKabLocked && (
+                <p className="text-[10.5px] text-slate-400 font-medium">Terkunci otomatis sesuai kewenangan akun admin Anda.</p>
+              )}
             </Field>
 
             <Field label="Lintang (Latitude)">

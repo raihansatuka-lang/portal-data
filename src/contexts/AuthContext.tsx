@@ -2,11 +2,14 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { AdminService } from "@/services/adminService";
 import { setAccessTokenCookie, clearAccessTokenCookie, getAccessTokenCookie } from "@/utils/cookie";
 
-interface AuthUser {
+export interface AuthUser {
   id: number;
   name: string;
   email: string;
-  roles: string[];
+  role?: string;
+  roles?: string[];
+  cabang_dinas_id?: number | null;
+  kode_kabupaten?: string | null;
 }
 
 interface AuthContextType {

@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "KABKOT": "Kota Palu (Placeholder)" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [119.8, -0.8],
+            [119.9, -0.8],
+            [119.9, -0.9],
+            [119.8, -0.9],
+            [119.8, -0.8]
+          ]
+        ]
+      }
+    }
+  ]
+}

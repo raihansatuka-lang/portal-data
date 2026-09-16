@@ -106,6 +106,7 @@ const DUMMY_DEFAULT_SCHOOL: Record<string, any> = {
   ruang_perpus: 1,
   ruang_guru: 2,
   ruang_toilet: 8,
+  last_update: "2026-09-16 14:30:00",
 };
 
 // ─── Data Galeri Sarpras Default (Aset Lokal dari gambar.zip) ─────────────────
@@ -234,6 +235,35 @@ const getJenjangLabel = (j?: string | null) => {
     SKB: "Sanggar Kegiatan Belajar",
   };
   return map[clean] ?? clean;
+};
+
+// ─── Format Waktu Sinkronisasi Data (WITA / UTC+8) ──────────────────────────
+const formatSyncTimestamp = (rawDate?: any): { formatted: string; isReal: boolean } => {
+  if (!rawDate) {
+    return { formatted: "Semester Genap 2025/2026", isReal: false };
+  }
+
+  try {
+    const dateObj = new Date(rawDate);
+    if (isNaN(dateObj.getTime())) {
+      return { formatted: String(rawDate), isReal: true };
+    }
+
+    // Format dengan Intl ke zona WITA (Makassar)
+    const formatted =
+      new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Makassar",
+      }).format(dateObj) + " WITA";
+
+    return { formatted, isReal: true };
+  } catch {
+    return { formatted: String(rawDate), isReal: true };
+  }
 };
 
 // ─── Marker Leaflet Custom dengan Animasi Ping ─────────────────────────────
@@ -519,6 +549,19 @@ export const SekolahDetail = () => {
     `Wilayah ${kabupatenName.startsWith("Kab.") || kabupatenName.startsWith("Kota") ? kabupatenName : `Kab. ${kabupatenName}`}`;
   const akreditasi = String(school.akreditasi || "B");
 
+  // Waktu Pengambilan / Sinkronisasi Data Dinamis (Dapodik / Server)
+  const rawSyncTime =
+    school.last_update ||
+    school.updated_at ||
+    school.tanggal_sinkronisasi ||
+    school.tanggal_ambil ||
+    school.dapodik_sync_at ||
+    data?.last_update ||
+    data?.updated_at ||
+    null;
+
+  const { formatted: syncTimeText, isReal: isRealSyncTime } = formatSyncTimestamp(rawSyncTime);
+
   // Alamat Lengkap
   const alamatParts: string[] = [];
   if (school.alamat_jalan) alamatParts.push(String(school.alamat_jalan));
@@ -737,6 +780,15 @@ export const SekolahDetail = () => {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100/90 hover:bg-slate-200/70 hover:-translate-y-0.5 transition-all duration-150 rounded-full text-xs font-bold text-slate-700 cursor-default">
                   <Building2 className="w-3.5 h-3.5 text-slate-500" />
                   {school.status_kepemilikan}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50/85 hover:bg-blue-100/80 hover:-translate-y-0.5 transition-all duration-150 rounded-full text-xs font-semibold text-blue-900 border border-blue-200/70 shadow-2xs cursor-default"
+                  title={isRealSyncTime ? `Waktu sinkronisasi data Dapodik: ${syncTimeText}` : "Data terdaftar pada semester aktif"}
+                >
+                  <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>
+                    Sinkronisasi: <strong className="font-bold text-blue-950">{syncTimeText}</strong>
+                  </span>
                 </span>
               </div>
             </div>

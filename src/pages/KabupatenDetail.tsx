@@ -730,8 +730,8 @@ export const KabupatenDetail = () => {
               <button
                 onClick={() => setKabupatenDropdownOpen(!kabupatenDropdownOpen)}
                 className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs ${kabupatenDropdownOpen
-                    ? "bg-blue-600 text-white shadow-blue-600/25 ring-2 ring-blue-200"
-                    : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-blue-300 hover:shadow-sm"
+                  ? "bg-blue-600 text-white shadow-blue-600/25 ring-2 ring-blue-200"
+                  : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-blue-300 hover:shadow-sm"
                   }`}
                 title="Pilih dan Ganti Kabupaten / Kota"
               >
@@ -794,8 +794,8 @@ export const KabupatenDetail = () => {
                             key={kKode}
                             onClick={() => handleSwitchKabupaten(kKode)}
                             className={`flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer ${isCurrent
-                                ? "bg-blue-50 text-blue-700 border border-blue-200/70 shadow-2xs"
-                                : "text-slate-700 hover:bg-blue-50/60 hover:text-blue-700 hover:pl-3"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200/70 shadow-2xs"
+                              : "text-slate-700 hover:bg-blue-50/60 hover:text-blue-700 hover:pl-3"
                               }`}
                           >
                             <div className="w-6 h-6 rounded-lg bg-white border border-slate-200/80 p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
@@ -930,7 +930,7 @@ export const KabupatenDetail = () => {
                 <GraduationCap className="w-4.5 h-4.5" />
               </div>
               <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-2 py-0.5 rounded-full border border-purple-200/60`}>
-                SMA / MA
+                SMA Sederajat
               </span>
             </div>
             <div>
@@ -1061,23 +1061,20 @@ export const KabupatenDetail = () => {
             <div className="absolute top-4 right-4 z-10">
               <button
                 onClick={() => setShowKecamatanPolygon(!showKecamatanPolygon)}
-                className={`group flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md backdrop-blur-md border ${
-                  showKecamatanPolygon
+                className={`group flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md backdrop-blur-md border ${showKecamatanPolygon
                     ? "bg-white/95 text-blue-700 border-blue-200/90 hover:bg-white hover:border-blue-300 shadow-blue-500/10"
                     : "bg-white/90 text-slate-500 border-slate-200 hover:bg-white hover:text-slate-800"
-                }`}
+                  }`}
                 title={showKecamatanPolygon ? "Klik untuk menyembunyikan poligon batas kecamatan" : "Klik untuk menampilkan poligon batas kecamatan"}
               >
-                <Layers className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110 ${
-                  showKecamatanPolygon ? "text-blue-600" : "text-slate-400"
-                }`} />
+                <Layers className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110 ${showKecamatanPolygon ? "text-blue-600" : "text-slate-400"
+                  }`} />
                 <span className="hidden sm:inline">Poligon Kecamatan</span>
                 <span
-                  className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md transition-colors ${
-                    showKecamatanPolygon
+                  className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md transition-colors ${showKecamatanPolygon
                       ? "bg-blue-100/80 text-blue-700"
                       : "bg-slate-100 text-slate-400"
-                  }`}
+                    }`}
                 >
                   {showKecamatanPolygon ? "ON" : "OFF"}
                 </span>

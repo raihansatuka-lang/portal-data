@@ -80,7 +80,7 @@ const JENJANG_COLOR: Record<string, string> = {
 
 // Legenda jenjang yang ditampilkan (kelompok utama)
 const JENJANG_LEGEND = [
-  { label: "TK / PAUD", color: "#f59e0b", keys: ["TK", "KB", "SPS", "TPA"] },
+  { label: "PAUD / TK", color: "#f59e0b", keys: ["TK", "KB", "SPS", "TPA"] },
   { label: "RA (TK Islam)", color: "#fb923c", keys: ["RA"] },
   { label: "SD", color: "#10b981", keys: ["SD"] },
   { label: "MI", color: "#34d399", keys: ["MI"] },

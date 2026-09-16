@@ -86,7 +86,7 @@ const KECAMATAN_COLORS = [
 
 // ─── Config Lengkap Jenjang Pendidikan (Formal & Non-Formal) ───────────────────
 const JENJANG_CONFIG: Record<string, { label: string; color: string; bg: string; text: string; iconBg: string; iconColor: string; matchKeys: string[] }> = {
-  TK: { label: "TK / PAUD", color: "#f59e0b", bg: "bg-amber-50", text: "text-amber-700", iconBg: "#FEF3C7", iconColor: "#D97706", matchKeys: ["TK", "KB", "SPS", "TPA", "RA"] },
+  TK: { label: "PAUD / TK", color: "#f59e0b", bg: "bg-amber-50", text: "text-amber-700", iconBg: "#FEF3C7", iconColor: "#D97706", matchKeys: ["TK", "KB", "SPS", "TPA", "RA"] },
   SD: { label: "SD / MI", color: "#10b981", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#DCFCE7", iconColor: "#15803D", matchKeys: ["SD", "MI"] },
   SMP: { label: "SMP / MTs", color: "#3b82f6", bg: "bg-sky-50", text: "text-sky-700", iconBg: "#DBEAFE", iconColor: "#1D4ED8", matchKeys: ["SMP", "MTs"] },
   SMA: { label: "SMA / MA", color: "#8b5cf6", bg: "bg-purple-50", text: "text-purple-700", iconBg: "#EDE9FE", iconColor: "#6D28D9", matchKeys: ["SMA", "MA"] },
@@ -861,7 +861,7 @@ export const KabupatenDetail = () => {
                 <GraduationCap className="w-4.5 h-4.5" />
               </div>
               <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.TK.text} ${JENJANG_CONFIG.TK.bg} px-2 py-0.5 rounded-full border border-amber-200/60`}>
-                TK / PAUD
+                PAUD / TK
               </span>
             </div>
             <div>
@@ -1162,7 +1162,7 @@ export const KabupatenDetail = () => {
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { key: "semua", label: "Semua" },
-                  { key: "TK", label: "TK" },
+                  { key: "TK", label: "PAUD / TK" },
                   { key: "SD", label: "SD" },
                   { key: "SMP", label: "SMP" },
                   ...(filterWewenang === "semua" ? [

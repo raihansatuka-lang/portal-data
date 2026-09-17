@@ -318,6 +318,8 @@ export const ProvinsiDetail = () => {
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<any>(null);
   const markerMapRef = useRef<Record<string, L.Marker>>({});
+  const schoolCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   // ── State Data ───────────────────────────────────────────────────────────
   const [allSekolah, setAllSekolah] = useState<SekolahMarker[]>([]);
@@ -538,7 +540,16 @@ export const ProvinsiDetail = () => {
     const lng = parseFloat(String(school.bujur ?? ""));
     if (!lat || !lng || isNaN(lat) || isNaN(lng) || !mapRef.current) return;
 
+    if (mapMode !== "titik") {
+      setMapMode("titik");
+    }
+
     setSelectedSchool(school);
+
+    if (window.innerWidth < 1024 && mapContainerRef.current) {
+      mapContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
     mapRef.current.flyTo([lat, lng], 16, { animate: true, duration: 1 });
 
     setTimeout(() => {
@@ -551,7 +562,20 @@ export const ProvinsiDetail = () => {
         marker.openPopup();
       }
     }, 750);
-  }, []);
+  }, [mapMode]);
+
+  // ── Two-Way Sync: Auto-scroll sidebar list to selected school card ────────
+  useEffect(() => {
+    if (selectedSchool?.npsn) {
+      const el = schoolCardRefs.current[selectedSchool.npsn];
+      if (el) {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }
+  }, [selectedSchool?.npsn]);
 
   // ── Fly to Kabupaten ──────────────────────────────────────────────────────
   const handleFocusKabupaten = useCallback((kode: string) => {
@@ -892,7 +916,7 @@ export const ProvinsiDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-auto lg:h-[620px]">
 
           {/* Peta dengan Akselerasi Canvas & Cluster Super Smooth */}
-          <div className="lg:col-span-2 relative h-[500px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
+          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[500px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
             <img
               src="/images/cmd/bc-cmdcenter-bg.webp"
               alt=""
@@ -1303,6 +1327,9 @@ export const ProvinsiDetail = () => {
                 return (
                   <div
                     key={key}
+                    ref={(el) => {
+                      if (school.npsn) schoolCardRefs.current[school.npsn] = el;
+                    }}
                     onClick={() => handleFocusSchool(school)}
                     className={`bg-white rounded-2xl p-3 border shadow-2xs cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 shrink-0 ${isActive ? "border-blue-500 bg-blue-50/40 ring-2 ring-blue-500/20" : "border-slate-100 hover:border-blue-200"
                       }`}

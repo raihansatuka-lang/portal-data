@@ -23,7 +23,9 @@ import {
   Compass,
   ArrowUpDown,
   ExternalLink,
-  Filter
+  Filter,
+  RotateCcw,
+  X
 } from "lucide-react";
 import { PemetaanService } from "@/services/pemetaanService";
 import { AdminService } from "@/services/adminService";
@@ -528,17 +530,7 @@ export const ProvinsiDetail = () => {
     };
   }, [allSekolah, filteredSekolah, selectedCabdis, selectedKabKode, filterJenjang, schoolSearch]);
 
-  const generalDataSubtitle = useMemo(() => {
-    if (selectedCabdis !== null) {
-      const cab = CABDIS_INFO[selectedCabdis];
-      return `Ringkasan data seluruh jenjang untuk ${cab?.nama ?? `Wilayah ${selectedCabdis}`} (${cab?.label ?? ''})`;
-    }
-    if (selectedKabKode !== null) {
-      const kab = KABUPATEN_CENTROIDS[selectedKabKode];
-      return `Ringkasan data seluruh jenjang untuk ${kab?.nama ?? selectedKabKode}`;
-    }
-    return "Ringkasan agregat data pokok seluruh jenjang satuan pendidikan se-Sulawesi Tengah";
-  }, [selectedCabdis, selectedKabKode]);
+  const generalDataSubtitle = "Ringkasan agregat data pokok seluruh jenjang satuan pendidikan se-Sulawesi Tengah";
 
   // ── Fly to School ────────────────────────────────────────────────────────
   const handleFocusSchool = useCallback((school: SekolahMarker) => {
@@ -599,7 +591,20 @@ export const ProvinsiDetail = () => {
   const handleResetMap = useCallback(() => {
     setSelectedCabdis(null);
     setSelectedKabKode(null);
-    mapRef.current?.setView([-1.4, 121.2], 7.5, { animate: true });
+    setSelectedSchool(null);
+    mapRef.current?.flyTo([-1.4, 121.2], 7.5, { animate: true, duration: 1 });
+  }, []);
+
+  // ── Reset All Filters & Map ──────────────────────────────────────────────
+  const handleResetAllFilters = useCallback(() => {
+    setSelectedCabdis(null);
+    setSelectedKabKode(null);
+    setSelectedSchool(null);
+    setFilterJenjang("semua");
+    setFilterStatus("");
+    setFilterAkreditasi("");
+    setSchoolSearch("");
+    mapRef.current?.flyTo([-1.4, 121.2], 7.5, { animate: true, duration: 1 });
   }, []);
 
   // ── GeoJSON Thematic Style per Kabupaten / Cabang Dinas ───────────────────
@@ -738,18 +743,25 @@ export const ProvinsiDetail = () => {
 
             </div>
 
-            {/* Quick Cabdis Indicator */}
-            {selectedCabdis && (
-              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl shrink-0">
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-                <span className="text-xs font-bold text-blue-800">
-                  Filter Aktif: {CABDIS_INFO[selectedCabdis]?.nama} ({CABDIS_INFO[selectedCabdis]?.label})
+            {/* Quick Filter Active Indicator */}
+            {(selectedCabdis !== null || selectedKabKode !== null) && (
+              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 shadow-2xs">
+                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                <span className="text-xs font-semibold text-slate-700">
+                  <span className="text-slate-400 font-medium mr-1">Filter:</span>
+                  {selectedKabKode
+                    ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama
+                    : selectedCabdis
+                      ? `${CABDIS_INFO[selectedCabdis]?.nama} (${CABDIS_INFO[selectedCabdis]?.label})`
+                      : ""}
                 </span>
                 <button
-                  onClick={() => handleFocusCabdis(selectedCabdis)}
-                  className="text-[10px] font-black text-blue-600 hover:text-blue-900 uppercase ml-1 cursor-pointer"
+                  onClick={handleResetMap}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 hover:bg-white border border-transparent hover:border-slate-200 px-2 py-0.5 rounded-lg transition-all cursor-pointer"
+                  title="Kembalikan tampilan ke seluruh wilayah Sulawesi Tengah"
                 >
-                  ✕ Lepas
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset Tampilan</span>
                 </button>
               </div>
             )}
@@ -930,7 +942,7 @@ export const ProvinsiDetail = () => {
                       layer.bindTooltip(`
                         <div style="font-family:'Poppins',sans-serif;font-size:11px;padding:2px;">
                           <div style="font-weight:900;font-size:12px;color:#fff;">${kabName}</div>
-                          <div style="color:${cab?.color || '#3b82f6'};font-weight:700;margin-top:2px;">🏛️ ${cab?.nama || ''} — ${cab?.label || ''}</div>
+                          <div style="color:${cab?.color || '#3b82f6'};font-weight:700;margin-top:2px;">${cab?.nama || ''} — ${cab?.label || ''}</div>
                           <div style="font-size:10px;color:#94a3b8;margin-top:4px;">${count} Sekolah Menengah · Klik untuk fokus</div>
                         </div>
                       `, {
@@ -1008,6 +1020,32 @@ export const ProvinsiDetail = () => {
               </div>
             </div>
 
+            {/* Floating Active Region Banner on Map */}
+            {(selectedCabdis !== null || selectedKabKode !== null) && (
+              <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 max-w-[90%]">
+                <div className="bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-md border border-slate-200/90 flex items-center gap-2.5 text-xs text-slate-800">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                  <span className="text-[11px] text-slate-500 font-medium">Wilayah:</span>
+                  <span className="font-bold text-[11px] text-slate-900 truncate max-w-[200px] sm:max-w-xs">
+                    {selectedKabKode
+                      ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama
+                      : selectedCabdis
+                        ? `${CABDIS_INFO[selectedCabdis]?.nama} (${CABDIS_INFO[selectedCabdis]?.label})`
+                        : ""}
+                  </span>
+                  <div className="w-px h-3.5 bg-slate-200 shrink-0" />
+                  <button
+                    onClick={handleResetMap}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-0.5 rounded-lg transition-all cursor-pointer"
+                    title="Kembalikan tampilan ke seluruh wilayah Sulawesi Tengah"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Seluruh Sulteng</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Floating Zoom & Map Controls (Top Left) */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
               <button
@@ -1029,7 +1067,7 @@ export const ProvinsiDetail = () => {
                 className="w-8 h-8 bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all cursor-pointer"
                 title="Reset Tampilan Seluruh Sulawesi Tengah"
               >
-                <Compass className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -1118,17 +1156,14 @@ export const ProvinsiDetail = () => {
 
               <div className="flex items-center gap-2">
                 {(selectedKabKode || selectedCabdis) && (
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100 flex items-center gap-1.5">
                     <span>{selectedKabKode ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama : (selectedCabdis ? CABDIS_INFO[selectedCabdis]?.nama : "")}</span>
                     <button
-                      onClick={() => {
-                        setSelectedKabKode(null);
-                        setSelectedCabdis(null);
-                      }}
-                      className="hover:text-rose-600 font-bold ml-0.5 cursor-pointer"
-                      title="Hapus filter wilayah"
+                      onClick={handleResetMap}
+                      className="hover:text-rose-600 font-bold p-0.5 cursor-pointer rounded transition-colors"
+                      title="Kembalikan ke seluruh wilayah"
                     >
-                      ✕
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 )}
@@ -1236,17 +1271,12 @@ export const ProvinsiDetail = () => {
               </span>
               {(filterJenjang !== "semua" || filterStatus || filterAkreditasi || schoolSearch || selectedCabdis !== null || selectedKabKode !== null) && (
                 <button
-                  onClick={() => {
-                    setFilterJenjang("semua");
-                    setFilterStatus("");
-                    setFilterAkreditasi("");
-                    setSchoolSearch("");
-                    setSelectedCabdis(null);
-                    setSelectedKabKode(null);
-                  }}
-                  className="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider cursor-pointer"
+                  onClick={handleResetAllFilters}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                  title="Reset seluruh filter dan kembali ke tampilan awal"
                 >
-                  Reset
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset Filter</span>
                 </button>
               )}
             </div>
@@ -1456,12 +1486,22 @@ export const ProvinsiDetail = () => {
                   <button
                     onClick={() => handleFocusCabdis(cab.id)}
                     className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${isFocused
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                      ? "bg-slate-800 text-white border-slate-800 hover:bg-slate-900 shadow-xs"
                       : "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
                       }`}
+                    title={isFocused ? "Batalkan sorotan wilayah dan kembali ke seluruh provinsi" : "Sorot wilayah ini pada peta"}
                   >
-                    <Compass className="w-3.5 h-3.5" />
-                    <span>{isFocused ? "Fokus Aktif" : "Sorot Peta"}</span>
+                    {isFocused ? (
+                      <>
+                        <RotateCcw className="w-3.5 h-3.5 text-blue-300" />
+                        <span>Batal Sorot</span>
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Sorot Peta</span>
+                      </>
+                    )}
                   </button>
 
                   <Link
@@ -1482,9 +1522,8 @@ export const ProvinsiDetail = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-12">
         <GeneralDataSection
           data={provinsiGeneralData}
-          title={selectedKabKode !== null && KABUPATEN_CENTROIDS[selectedKabKode]?.nama ? `Data Dapodik ${KABUPATEN_CENTROIDS[selectedKabKode].nama}` : "Data Dapodik Sulawesi Tengah"}
+          title="Data Dapodik Sulawesi Tengah"
           subtitle={generalDataSubtitle}
-          kabupatenName={selectedKabKode !== null ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama : undefined}
         />
       </div>
 

@@ -531,13 +531,13 @@ export const ProvinsiDetail = () => {
   const generalDataSubtitle = useMemo(() => {
     if (selectedCabdis !== null) {
       const cab = CABDIS_INFO[selectedCabdis];
-      return `Ringkasan data kewenangan provinsi untuk ${cab?.nama ?? `Wilayah ${selectedCabdis}`} (${cab?.label ?? ''})`;
+      return `Ringkasan data seluruh jenjang untuk ${cab?.nama ?? `Wilayah ${selectedCabdis}`} (${cab?.label ?? ''})`;
     }
     if (selectedKabKode !== null) {
       const kab = KABUPATEN_CENTROIDS[selectedKabKode];
-      return `Ringkasan data kewenangan provinsi untuk ${kab?.nama ?? selectedKabKode}`;
+      return `Ringkasan data seluruh jenjang untuk ${kab?.nama ?? selectedKabKode}`;
     }
-    return "Ringkasan agregat data pokok pendidikan menengah & khusus (SMA/SMK/SLB) se-Sulawesi Tengah";
+    return "Ringkasan agregat data pokok seluruh jenjang satuan pendidikan se-Sulawesi Tengah";
   }, [selectedCabdis, selectedKabKode]);
 
   // ── Fly to School ────────────────────────────────────────────────────────
@@ -1482,7 +1482,7 @@ export const ProvinsiDetail = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-12">
         <GeneralDataSection
           data={provinsiGeneralData}
-          title="Data Dapodik Sulawesi Tengah"
+          title={selectedKabKode !== null && KABUPATEN_CENTROIDS[selectedKabKode]?.nama ? `Data Dapodik ${KABUPATEN_CENTROIDS[selectedKabKode].nama}` : "Data Dapodik Sulawesi Tengah"}
           subtitle={generalDataSubtitle}
           kabupatenName={selectedKabKode !== null ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama : undefined}
         />

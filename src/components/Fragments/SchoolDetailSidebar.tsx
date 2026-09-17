@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { X, School, User, Phone, MapPin, Info, Copy, Check, Layers, Award, Users, TrendingUp, Calendar, GraduationCap, UserCheck } from "lucide-react";
+import { X, School, User, Phone, MapPin, Info, Copy, Check, Layers, Award, Users, TrendingUp, Calendar, GraduationCap, UserCheck, Eye, EyeOff } from "lucide-react";
 
 interface SchoolDetailSidebarProps {
   isOpen: boolean;
@@ -138,6 +138,7 @@ export const SchoolDetailSidebar: React.FC<SchoolDetailSidebarProps> = ({
 }) => {
   const [copiedCoords, setCopiedCoords] = useState(false);
   const [copiedNip, setCopiedNip] = useState(false);
+  const [revealedPhone, setRevealedPhone] = useState(false);
 
   if (!isOpen || !school) return null;
 
@@ -295,20 +296,36 @@ export const SchoolDetailSidebar: React.FC<SchoolDetailSidebarProps> = ({
                 )}
               </div>
 
-              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between">
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between space-y-2">
                 <div>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Kontak WA / HP</span>
-                  <span className="font-bold text-slate-700 tracking-wider text-xs">{kepsekPhone}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Kontak Pimpinan</span>
+                    <button
+                      type="button"
+                      onClick={() => setRevealedPhone(!revealedPhone)}
+                      className="group text-[10px] font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      {revealedPhone ? (
+                        <>
+                          <EyeOff className="w-3 h-3 text-slate-400/50 group-hover:text-slate-600 transition-colors" />
+                          <span>Tutup</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3 h-3 text-slate-400/60 group-hover:text-slate-600 transition-colors" />
+                          <span>Lihat No. HP</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <span className="font-bold font-mono text-slate-700 tracking-wider text-xs block mt-1">
+                    {revealedPhone || !kepsekPhone
+                      ? kepsekPhone
+                      : kepsekPhone.length >= 8
+                      ? `${kepsekPhone.substring(0, 4)}-••••-${kepsekPhone.substring(kepsekPhone.length - 4)}`
+                      : "••••-••••"}
+                  </span>
                 </div>
-                {kepsekPhone && (
-                  <a
-                    href={`tel:${kepsekPhone}`}
-                    className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>Hubungi WA / Telp</span>
-                  </a>
-                )}
               </div>
             </div>
           </div>

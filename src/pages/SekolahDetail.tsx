@@ -12,6 +12,8 @@ import {
   Award,
   Building2,
   Phone,
+  Eye,
+  EyeOff,
   Mail,
   Globe,
   User,
@@ -311,6 +313,18 @@ const SetView = ({
       mapRef.current = map;
     }
   }, [lat, lng, zoom, map, mapRef]);
+
+  // Observer otomatis untuk menyesuaikan viewport Leaflet saat kontainer flex meregang
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
+  }, [map]);
+
   return null;
 };
 
@@ -348,6 +362,77 @@ const formatTanggalIndo = (tglStr?: string | null) => {
   } catch {
     return String(tglStr);
   }
+};
+
+// ─── Komponen Proteksi Privasi Nomor Telepon / HP Kepsek ─────────────────────
+const ProtectedPhoneContact: React.FC<{
+  phone?: string | null;
+}> = ({ phone }) => {
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  if (!phone || phone === "-" || phone.trim() === "") {
+    return (
+      <p className="text-xs text-slate-400 font-medium pt-1 flex items-center gap-1.5">
+        <Phone className="w-3.5 h-3.5 text-slate-300" />
+        <span>Kontak belum tersedia</span>
+      </p>
+    );
+  }
+
+  // Format sensor: sembunyikan 4 digit tengah agar terhindar dari bot scraper
+  const cleanDigits = phone.replace(/[^0-9+]/g, "");
+  let maskedPhone = phone;
+  if (cleanDigits.length >= 8) {
+    if (cleanDigits.startsWith("08") || cleanDigits.startsWith("+62") || cleanDigits.startsWith("62")) {
+      const prefix = phone.substring(0, 4);
+      const suffix = phone.substring(phone.length - 4);
+      maskedPhone = `${prefix}-••••-${suffix}`;
+    } else {
+      const prefix = phone.substring(0, 3);
+      const suffix = phone.substring(phone.length - 3);
+      maskedPhone = `${prefix}-••••-${suffix}`;
+    }
+  } else {
+    maskedPhone = "••••-••••";
+  }
+
+  return (
+    <div className="pt-2 space-y-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {/* Box Nomor Masked / Unmasked */}
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100/90 border border-slate-200/80 text-xs font-mono font-bold text-slate-700 shadow-2xs">
+          <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span>{isRevealed ? phone : maskedPhone}</span>
+        </div>
+
+        {/* Tombol Tampilkan / Sembunyikan Sensor */}
+        <button
+          type="button"
+          onClick={() => setIsRevealed(!isRevealed)}
+          className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold text-slate-500 hover:text-slate-700 bg-slate-50/70 hover:bg-slate-100 border border-slate-200/70 hover:border-slate-300 active:scale-95 transition-all duration-150 cursor-pointer shadow-2xs"
+          title={isRevealed ? "Sembunyikan nomor (sensor)" : "Tampilkan nomor lengkap"}
+        >
+          {isRevealed ? (
+            <>
+              <EyeOff className="w-3.5 h-3.5 text-slate-400/50 group-hover:text-slate-600 transition-colors" />
+              <span>Tutup</span>
+            </>
+          ) : (
+            <>
+              <Eye className="w-3.5 h-3.5 text-slate-400/60 group-hover:text-slate-600 transition-colors" />
+              <span>Lihat No. HP</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Catatan Privasi Anti-Spam */}
+      <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 leading-tight">
+        <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
+        <span>Nomor disensor untuk melindungi privasi pimpinan dari bot spam & penipuan.</span>
+      </p>
+    </div>
+  );
 };
 
 // ─── Klasifikasi Badge Risiko Kebencanaan ─────────────────────────────────
@@ -979,11 +1064,11 @@ export const SekolahDetail = () => {
         {/* ═════════════════════════════════════════════════════════════════════
             3. PETA GEOSPASIAL LOKASI & PROFIL LEGALITAS
            ═════════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
           {/* SISI KIRI: PETA INTERAKTIF (7 Kolom) */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all duration-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all duration-200 overflow-hidden flex flex-col h-full">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-2.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                 <h3 className="font-bold text-slate-800 text-sm tracking-wide">
@@ -1004,7 +1089,7 @@ export const SekolahDetail = () => {
             </div>
 
             {/* Peta Leaflet */}
-            <div className="relative h-80 sm:h-[480px] lg:h-[560px] w-full overflow-hidden bg-slate-100">
+            <div className="relative flex-1 min-h-[360px] sm:min-h-[460px] w-full overflow-hidden bg-slate-100">
               {hasKoordinat ? (
                 <>
                   {/* Layer Peta Terisolasi (z-0) */}
@@ -1071,7 +1156,7 @@ export const SekolahDetail = () => {
             </div>
 
             {/* Baris Keterangan Koordinat & Alamat */}
-            <div className="p-4 bg-slate-50/70 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="p-4 bg-slate-50/70 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shrink-0">
               <div className="flex items-start gap-2 text-slate-600">
                 <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <span className="font-medium">{alamatLengkap}</span>
@@ -1109,10 +1194,7 @@ export const SekolahDetail = () => {
                   <p className="text-xs text-slate-500 font-mono">
                     NIP: {school.nip_kepsek || "-"}
                   </p>
-                  <p className="text-xs text-slate-600 font-medium pt-1 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    {school.no_hp_kepsek || "-"}
-                  </p>
+                  <ProtectedPhoneContact phone={school.no_hp_kepsek} />
                 </div>
               </div>
             </div>
@@ -1143,6 +1225,19 @@ export const SekolahDetail = () => {
                   <span className="text-slate-500">Sumber & Daya Listrik:</span>
                   <span className="font-semibold text-slate-800">{school.sumber_listrik} ({Number(school.daya_listrik).toLocaleString("id-ID")} VA)</span>
                 </div>
+                {school.nomor_telepon && school.nomor_telepon !== "-" && (
+                  <div className="flex justify-between py-1.5 border-b border-slate-100 hover:bg-slate-50 px-1.5 rounded transition-colors">
+                    <span className="text-slate-500">Telepon Kantor / TU:</span>
+                    <a
+                      href={`tel:${school.nomor_telepon}`}
+                      className="font-semibold text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1"
+                      title="Klik untuk menghubungi telepon kantor"
+                    >
+                      <Phone className="w-3 h-3 text-slate-400" />
+                      <span>{school.nomor_telepon}</span>
+                    </a>
+                  </div>
+                )}
                 <div className="flex justify-between py-1.5 hover:bg-slate-50 px-1.5 rounded transition-colors">
                   <span className="text-slate-500">Website Sekolah:</span>
                   <a

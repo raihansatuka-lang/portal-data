@@ -1486,8 +1486,9 @@ export const KabupatenDetail = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-10">
         <GeneralDataSection
           data={generalData}
-          title="Data Umum Satuan Pendidikan"
+          title={`Data Dapodik ${info.nama}`}
           subtitle={`Ringkasan agregat data pokok pendidikan ${info.nama}`}
+          kabupatenName={info.nama}
         />
       </div>
 

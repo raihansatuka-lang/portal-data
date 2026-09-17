@@ -1482,8 +1482,9 @@ export const ProvinsiDetail = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-12">
         <GeneralDataSection
           data={provinsiGeneralData}
-          title="Data Umum Satuan Pendidikan Provinsi"
+          title="Data Dapodik Sulawesi Tengah"
           subtitle={generalDataSubtitle}
+          kabupatenName={selectedKabKode !== null ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama : undefined}
         />
       </div>
 

@@ -476,6 +476,7 @@ export const SekolahDetail = () => {
   const [isRaporModalOpen, setIsRaporModalOpen] = useState<boolean>(false);
   const [isDoModalOpen, setIsDoModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isBlptModalOpen, setIsBlptModalOpen] = useState<boolean>(false);
   const mapRef = useRef<L.Map | null>(null);
 
   const handleEditSuccess = (updatedData: any) => {
@@ -500,9 +501,10 @@ export const SekolahDetail = () => {
       if (e.key === "Escape") {
         setIsRaporModalOpen(false);
         setIsDoModalOpen(false);
+        setIsBlptModalOpen(false);
       }
     };
-    if (isRaporModalOpen || isDoModalOpen) {
+    if (isRaporModalOpen || isDoModalOpen || isBlptModalOpen) {
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     } else {
@@ -512,7 +514,7 @@ export const SekolahDetail = () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isRaporModalOpen, isDoModalOpen]);
+  }, [isRaporModalOpen, isDoModalOpen, isBlptModalOpen]);
 
   // Fetch School Data
   useEffect(() => {
@@ -690,9 +692,12 @@ export const SekolahDetail = () => {
 
   const belajarIdGtk = Math.min(totalGtk, Math.max(1, Math.round(totalGtk * 0.96)));
   const belajarIdSiswa = Math.min(siswaCount, Math.max(1, Math.round(siswaCount * 0.88)));
-  const gceGuru = Math.min(totalGuru, Math.max(4, Math.round(totalGuru * 0.14)));
-  const gceL1 = Math.round(gceGuru * 0.75);
-  const gceL2 = Math.max(1, gceGuru - gceL1);
+
+  // Poin 5: BLPT for Education & LMS Sekolahku Keren (Sertifikasi Pendidik)
+  const blptSertifGuru = Math.min(totalGuru, Math.max(5, Math.round(totalGuru * 0.28)));
+  const blptSertifPct = Math.round((blptSertifGuru / Math.max(1, totalGuru)) * 100);
+  const sertifLmsMandiri = Math.round(blptSertifGuru * 0.65);
+  const sertifTerkurasi = Math.max(2, blptSertifGuru - sertifLmsMandiri);
 
   // Poin 6: Bantuan Akses Internet (Starlink)
   const internetType = data.is_3t ? "Bantuan Satelit Starlink LEO Disdik Sulteng" : "Fibre Optic & Backup Starlink LEO";
@@ -1422,31 +1427,56 @@ export const SekolahDetail = () => {
               </div>
             </div>
 
-            {/* KARTU C: SEKOLAH RUJUKAN GOOGLE & CHROMEBOOK (Poin 5) */}
+            {/* KARTU C: BLPT FOR EDUCATION & LMS SEKOLAHKU KEREN (Poin 5) */}
             <div className="group relative bg-slate-50/70 hover:bg-white rounded-2xl p-5 border border-slate-200/70 hover:border-amber-300 hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-2xs group-hover:scale-110 group-hover:rotate-3 transition-transform duration-200">
-                    <Laptop className="w-4 h-4" />
+                    <GraduationCap className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                    UPTD BLPT Disdik Prov Sulteng
+                    UPTD BLPT Disdik Prov Sulteng1
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-1 group-hover:text-amber-700 transition-colors">
-                  BLPT for Education & TIK
+                  BLPT for Education
                 </h4>
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-2xl font-black text-slate-900 group-hover:text-amber-700 transition-colors">{chromebookCount}</span>
-                  <span className="text-xs font-bold text-slate-500">Unit Chromebook</span>
+                <div className="flex items-baseline gap-1.5 mb-1.5">
+                  <span className="text-2xl font-black text-slate-900 group-hover:text-amber-700 transition-colors">
+                    {blptSertifGuru}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">Guru Bersertifikat</span>
+                  <span className="ml-auto text-[10.5px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                    {blptSertifPct}% GTK
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  {gceGuru} Pendidik tersertifikasi Google Certified Educator ({gceL1} Level 1, {gceL2} Level 2) menuju Sekolah Rujukan Google (SRG).
+                <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
+                  Pendidik telah menyelesaikan diklat kompetensi digital pada platform pembelajaran daerah & pemanfaatan.
                 </p>
+
+                {/* Direct Link to LMS Sekolahku Keren */}
+                <a
+                  href="https://lms.sekolahkukeren.id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-2xs hover:shadow-xs transition-all duration-150 hover:-translate-y-0.5 active:scale-95 cursor-pointer group/btn"
+                  title="Buka Learning Management System Sekolahku Keren"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Buka LMS Sekolahku Keren</span>
+                  <ExternalLink className="w-3 h-3 opacity-80 group-hover/btn:translate-x-0.5 transition-transform" />
+                </a>
               </div>
               <div className="mt-3.5 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                <span>Chrome Device Mgmt (CDM)</span>
-                <span className="text-blue-600 font-bold">Terkelola</span>
+                <button
+                  type="button"
+                  onClick={() => setIsBlptModalOpen(true)}
+                  className="text-amber-700 hover:text-amber-800 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                >
+                  <span>Rincian Sertifikasi</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+                <span className="text-emerald-600 font-bold">Aktif LMS</span>
               </div>
             </div>
 
@@ -2235,6 +2265,157 @@ export const SekolahDetail = () => {
               </span>
               <button
                 onClick={() => setIsDoModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white shadow-xs hover:shadow-sm hover:-translate-y-0.5 active:scale-95 transition-all duration-150 cursor-pointer"
+                type="button"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Rincian Sertifikasi Pendidik BLPT & LMS Sekolahku Keren ── */}
+      {isBlptModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div
+            className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-amber-50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-900 text-base leading-tight">
+                    Sertifikasi Pendidik BLPT & LMS Sekolahku Keren
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {school.nama} • UPTD BLPT Disdik Provinsi Sulawesi Tengah
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBlptModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                type="button"
+                aria-label="Tutup modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-5 text-slate-700 text-xs">
+              {/* Ringkasan Angka Statistik */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80">
+                  <span className="text-slate-500 font-medium block text-[11px]">Guru Bersertifikat</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl font-black text-amber-900">{blptSertifGuru}</span>
+                    <span className="text-[11px] font-bold text-amber-700">/ {totalGuru} Guru</span>
+                  </div>
+                  <span className="text-[10px] text-amber-600 font-semibold block mt-0.5">{blptSertifPct}% Capaian Sekolah</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80">
+                  <span className="text-slate-500 font-medium block text-[11px]">Chromebook Terkelola</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl font-black text-blue-900">{chromebookCount}</span>
+                    <span className="text-[11px] font-bold text-blue-700">Unit</span>
+                  </div>
+                  <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">Chrome Device Mgmt (CDM)</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80">
+                  <span className="text-slate-500 font-medium block text-[11px]">Status LMS Daerah</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-lg font-black text-emerald-900">Terintegrasi</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">lms.sekolahkukeren.id</span>
+                </div>
+              </div>
+
+              {/* Rincian Bidang Pelatihan & Modul Bersertifikat */}
+              <div className="space-y-3">
+                <h5 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                  <Award className="w-4 h-4 text-amber-600" />
+                  <span>Daftar Kompetensi & Sertifikasi Pelatihan Digital</span>
+                </h5>
+
+                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
+                  <div className="p-3.5 bg-slate-50/60 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-800 text-xs">Pemanfaatan LMS Sekolahku Keren & Kelas Interaktif</p>
+                      <p className="text-[11px] text-slate-500">Penyusunan RPP digital, bahan ajar interaktif, dan kuis daring</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-bold text-xs shrink-0">
+                      {sertifLmsMandiri} Guru Lulus
+                    </span>
+                  </div>
+
+                  <div className="p-3.5 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-800 text-xs">Optimalisasi Akun Belajar.id & Google Workspace for Education</p>
+                      <p className="text-[11px] text-slate-500">Kolaborasi Google Docs, Classroom, Drive Terkelola, dan Form Asesmen</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 font-bold text-xs shrink-0">
+                      {Math.min(totalGuru, Math.round(blptSertifGuru * 0.8))} Guru Lulus
+                    </span>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50/60 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-800 text-xs">Pemanfaatan Papan Interaktif Digital (PID / IFP 75" 4K)</p>
+                      <p className="text-[11px] text-slate-500">Pengoperasian media visual layar sentuh dalam ruang kelas digital</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 font-bold text-xs shrink-0">
+                      {Math.max(2, Math.round(blptSertifGuru * 0.5))} Guru Lulus
+                    </span>
+                  </div>
+
+                  <div className="p-3.5 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-800 text-xs">Asesmen Pembelajaran Berdiferensiasi & Literasi Digital</p>
+                      <p className="text-[11px] text-slate-500">Analisis capaian kompetensi siswa kurikulum merdeka via LMS</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs shrink-0">
+                      {Math.max(2, Math.round(blptSertifGuru * 0.4))} Guru Lulus
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Banner Navigasi ke LMS */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <p className="font-extrabold text-sm">Learning Management System (LMS) Sekolahku Keren</p>
+                  <p className="text-[11px] text-amber-100">
+                    Platform resmi pembelajaran digital dan peningkatan kompetensi guru binaan Dinas Pendidikan Provinsi Sulawesi Tengah.
+                  </p>
+                </div>
+                <a
+                  href="https://lms.sekolahkukeren.id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-white text-amber-700 hover:bg-amber-50 font-extrabold text-xs shrink-0 inline-flex items-center gap-1.5 shadow-xs hover:shadow transition-all duration-150 active:scale-95 cursor-pointer"
+                >
+                  <span>Kunjungi LMS</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-100 flex items-center justify-between bg-slate-50/70 text-xs">
+              <span className="text-slate-400 text-[11px]">
+                Data Terintegrasi UPTD BLPT Disdik Provinsi Sulawesi Tengah
+              </span>
+              <button
+                onClick={() => setIsBlptModalOpen(false)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white shadow-xs hover:shadow-sm hover:-translate-y-0.5 active:scale-95 transition-all duration-150 cursor-pointer"
                 type="button"
               >

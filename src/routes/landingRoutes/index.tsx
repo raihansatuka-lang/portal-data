@@ -1,8 +1,6 @@
-import { Home } from '@/pages/Home';
 import HomeV2 from '@/pages/HomeV2';
 import { CabangDinas } from '@/pages/CabangDinas';
 import { KabupatenDetail } from '@/pages/KabupatenDetail';
-import { KabupatenDetailOld } from '@/pages/KabupatenDetailOld';
 import { SekolahDetail } from '@/pages/SekolahDetail';
 import { ProvinsiDetail } from '@/pages/ProvinsiDetail';
 
@@ -14,10 +12,6 @@ const landingRoutes = [
   {
     path: 'beranda-v2',
     element: <HomeV2 />,
-  },
-  {
-    path: 'beranda-lama',
-    element: <Home />,
   },
   {
     path: 'provinsi',
@@ -50,10 +44,6 @@ const landingRoutes = [
   {
     path: 'kabupaten/:kodeKabupaten',
     element: <KabupatenDetail />,
-  },
-  {
-    path: 'kabupaten-old/:kodeKabupaten',
-    element: <KabupatenDetailOld />,
   },
   {
     path: 'sekolah/:npsn',

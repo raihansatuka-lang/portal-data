@@ -2,36 +2,10 @@ import { useEffect, useState } from "react";
 import { PemetaanService } from "@/services/pemetaanService";
 import { Skeleton } from "@/components/Elements/Skeleton/Skeleton";
 import { PortalHeroSectionV2 } from "@/components/Sections/PortalHeroSectionV2";
-import { TrackingSidebar } from "@/components/Fragments/TrackingSidebar";
-import { DetailSidebar } from "@/components/Fragments/DetailSidebar";
-import { ServiceDetailModal } from "@/components/Fragments/ServiceDetailModal";
-import { GtkDrilldownSidebar } from "@/components/Fragments/GtkDrilldownSidebar";
-import { GtkDetailSidebar } from "@/components/Analytics/GtkDetailSidebar";
-import { CategoryProjectionSidebar } from "@/components/Fragments/CategoryProjectionSidebar";
-import { SchoolReportSidebar } from "@/components/Fragments/SchoolReportSidebar";
-import { JatuhTempoSidebar } from "@/components/Fragments/JatuhTempoSidebar";
-import { RegionProjectionSidebar } from "@/components/Fragments/RegionProjectionSidebar";
-import type { DetailData } from "@/types";
 
 export const HomeV2 = () => {
   const [loading, setLoading] = useState(true);
   const [portalData, setPortalData] = useState<any>(null);
-
-  // Sidebar & Modal states
-  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [detailData, setDetailData] = useState<DetailData | null>(null);
-  const [activeDetail, setActiveDetail] = useState<{
-    type: "subject" | "region";
-    id: string | number;
-    title: string;
-  } | null>(null);
-  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
-  const [isServiceDetailOpen, setIsServiceDetailOpen] = useState(false);
-  const [isDrilldownOpen, setIsDrilldownOpen] = useState(false);
-  const [isSchoolReportsOpen, setIsSchoolReportsOpen] = useState(false);
-  const [selectedCabdisForSummary, setSelectedCabdisForSummary] = useState<any>(null);
-  const [activeCategoryDetail, setActiveCategoryDetail] = useState<string | null>(null);
-  const [activeJatuhTempoDetail, setActiveJatuhTempoDetail] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = "Portal Pemetaan Sekolah - Dinas Pendidikan Provinsi Sulawesi Tengah";
@@ -68,7 +42,6 @@ export const HomeV2 = () => {
           kabupatenStats,
           cards,
           smaProvinsiStats,
-          projections: null,
         });
       } catch (error) {
         console.error("Gagal fetch data landing V2:", error);
@@ -102,92 +75,9 @@ export const HomeV2 = () => {
         className="fixed inset-0 object-cover object-center w-full h-full opacity-15 pointer-events-none select-none z-0"
       />
 
-      {/* Sidebars & Modals */}
-      <GtkDetailSidebar
-        isOpen={!!activeDetail}
-        onClose={() => setActiveDetail(null)}
-        type={activeDetail?.type || "subject"}
-        id={activeDetail?.id || ""}
-        title={activeDetail?.title || ""}
-      />
-
-      <DetailSidebar
-        isOpen={!!detailData}
-        onClose={() => setDetailData(null)}
-        detailData={detailData}
-      />
-
-      <TrackingSidebar
-        isOpen={isTrackingOpen}
-        onClose={() => setIsTrackingOpen(false)}
-      />
-
-      <ServiceDetailModal
-        isOpen={isServiceDetailOpen}
-        onClose={() => setIsServiceDetailOpen(false)}
-        initialTab="guru_sma"
-      />
-
-      <GtkDrilldownSidebar
-        isOpen={isDrilldownOpen}
-        onClose={() => setIsDrilldownOpen(false)}
-        filters={{
-          kabupaten_kota: "",
-          cabdis: "",
-          sekolah: "",
-        }}
-        onFilterChange={() => {}}
-      />
-
-      <CategoryProjectionSidebar
-        isOpen={!!activeCategoryDetail}
-        onClose={() => setActiveCategoryDetail(null)}
-        data={{}}
-        initialCategory={activeCategoryDetail || "berkala"}
-        currentMonth={currentMonth}
-        onMonthChange={(m) => setCurrentMonth(m)}
-        isLoading={false}
-      />
-
-      <JatuhTempoSidebar
-        isOpen={!!activeJatuhTempoDetail}
-        onClose={() => setActiveJatuhTempoDetail(null)}
-        data={{}}
-        initialCategory={activeJatuhTempoDetail || "semua"}
-        isLoading={false}
-      />
-
-      <RegionProjectionSidebar
-        isOpen={!!selectedCabdisForSummary}
-        onClose={() => setSelectedCabdisForSummary(null)}
-        regionId={selectedCabdisForSummary?.id}
-        regionSlug={selectedCabdisForSummary?.slug}
-        regionName={selectedCabdisForSummary?.name}
-        currentMonth={currentMonth}
-        onMonthChange={(m) => setCurrentMonth(m)}
-      />
-
-      <SchoolReportSidebar
-        isOpen={isSchoolReportsOpen}
-        onClose={() => setIsSchoolReportsOpen(false)}
-        currentMonth={currentMonth}
-      />
-
       {/* Main V2 Content */}
       <main className="w-full bg-transparent min-h-screen relative z-10 overflow-x-hidden">
-        <PortalHeroSectionV2
-          portalData={portalData}
-          onViewRegionDetail={(marker) => {
-            const slug = marker.slug ?? "cabdis-1";
-            window.location.href = `/${slug}?name=${encodeURIComponent(marker.name ?? marker.kabupaten ?? "")}`;
-          }}
-          onProyeksiFilterChange={() => {}}
-          onOpenProyeksiDetail={(cat) => setActiveCategoryDetail(cat)}
-          onOpenJatuhTempoDetail={(cat) => setActiveJatuhTempoDetail(cat)}
-          onOpenSchoolReports={() => setIsSchoolReportsOpen(true)}
-          proyeksiLoading={false}
-          currentMonth={currentMonth}
-        />
+        <PortalHeroSectionV2 portalData={portalData} />
       </main>
     </div>
   );

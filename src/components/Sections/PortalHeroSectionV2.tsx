@@ -8,13 +8,7 @@ import { GeneralDataSection } from "./GeneralDataSection";
 
 interface Props {
   portalData: any;
-  onViewRegionDetail: (marker: any) => void;
-  onProyeksiFilterChange?: (range: "monthly" | "yearly", month?: number) => void;
-  onOpenProyeksiDetail?: (category: string) => void;
-  onOpenJatuhTempoDetail?: (category: string) => void;
-  onOpenSchoolReports?: () => void;
   proyeksiLoading?: boolean;
-  currentMonth?: string;
 }
 
 // ─── Legend Cabdis Interaktif ──────────────────────────────────────────────────
@@ -41,13 +35,7 @@ const CabdisLegend: React.FC<{ onNavigate: (slug: string) => void }> = ({ onNavi
 
 export const PortalHeroSectionV2: React.FC<Props> = ({
   portalData,
-  onViewRegionDetail,
-  onProyeksiFilterChange,
-  onOpenProyeksiDetail,
-  onOpenJatuhTempoDetail,
-  onOpenSchoolReports,
-  proyeksiLoading,
-  currentMonth,
+  proyeksiLoading = false,
 }) => {
   const navigate = useNavigate();
 

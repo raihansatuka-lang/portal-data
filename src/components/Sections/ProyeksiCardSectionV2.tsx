@@ -140,7 +140,7 @@ export const ProyeksiCardV2: React.FC<ProyeksiCardV2Props> = ({
 
   // ── Render Expanded Card ──
   return (
-    <div className="relative flex flex-col h-[calc(100vh-6.5rem)] max-h-[620px] min-h-[480px] overflow-hidden rounded-[2rem] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50 to-purple-50/30 p-5 shadow-[0_25px_60px_-20px_rgba(15,23,42,0.25)] font-poppins transition-all duration-300">
+    <div className="relative flex flex-col h-[460px] sm:h-[520px] lg:h-[calc(100vh-6.5rem)] lg:max-h-[620px] lg:min-h-[480px] overflow-hidden rounded-2xl sm:rounded-[2rem] border border-slate-200/90 bg-gradient-to-br from-white via-slate-50 to-purple-50/30 p-3.5 sm:p-5 shadow-[0_25px_60px_-20px_rgba(15,23,42,0.25)] font-poppins transition-all duration-300">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(139,92,246,0.08),_transparent_40%)]" />
 
       {/* Loading overlay */}

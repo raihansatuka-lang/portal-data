@@ -343,6 +343,7 @@ export const ProvinsiDetail = () => {
   const [sortBy, setSortBy] = useState<string>("az");
   const [hoveredJenjang, setHoveredJenjang] = useState<string | null>(null);
   const [showLegendMobile, setShowLegendMobile] = useState<boolean>(false);
+  const [mobileTab, setMobileTab] = useState<"map" | "list">("map");
 
   // ── Admin State ──────────────────────────────────────────────────────────
   const { isAdmin } = useAuth();
@@ -546,6 +547,10 @@ export const ProvinsiDetail = () => {
     }
 
     setSelectedSchool(school);
+
+    if (window.innerWidth < 1024) {
+      setMobileTab("map");
+    }
 
     if (window.innerWidth < 1024 && mapContainerRef.current) {
       mapContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -916,10 +921,41 @@ export const ProvinsiDetail = () => {
 
       {/* ══ SECTION 3: PETA (2/3) + PANEL LENGKAP FILTER & LIST (1/3) ═══════ */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4 sm:mt-6">
+
+        {/* Mobile View Switcher Tab (Peta vs Daftar) */}
+        <div className="lg:hidden flex items-center justify-center mb-3">
+          <div className="flex items-center p-1 bg-white/95 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/90 gap-1 w-full sm:w-auto">
+            <button
+              onClick={() => setMobileTab("map")}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                mobileTab === "map"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Peta Wilayah</span>
+            </button>
+            <button
+              onClick={() => setMobileTab("list")}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                mobileTab === "list"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Daftar Sekolah ({filteredSekolah.length})</span>
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-auto lg:h-[620px]">
 
           {/* Peta dengan Akselerasi Canvas & Cluster Super Smooth */}
-          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[360px] sm:h-[460px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
+          <div ref={mapContainerRef} className={`lg:col-span-2 relative h-[420px] sm:h-[480px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100 ${
+            mobileTab === "map" ? "block" : "hidden lg:block"
+          }`}>
             <img
               src="/images/cmd/bc-cmdcenter-bg.webp"
               alt=""
@@ -1168,6 +1204,18 @@ export const ProvinsiDetail = () => {
               )}
             </div>
 
+            {/* Quick Status Bar khusus Mobile saat di Mode Peta */}
+            <div className="lg:hidden absolute bottom-3 inset-x-3 z-20 pointer-events-none flex justify-center">
+              <button
+                onClick={() => setMobileTab("list")}
+                className="pointer-events-auto bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200/90 shadow-lg flex items-center gap-2 text-xs font-extrabold text-slate-800 active:scale-95 transition-all cursor-pointer"
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                <span>{filteredSekolah.length} Sekolah Terdaftar</span>
+                <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-lg ml-1 text-[11px]">Buka Daftar →</span>
+              </button>
+            </div>
+
             {/* Loading Overlay */}
             {(loadingData || loadingGeo) && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/40 backdrop-blur-xs">
@@ -1180,7 +1228,9 @@ export const ProvinsiDetail = () => {
           </div>
 
           {/* Panel Kanan: Filter Komprehensif & Daftar Sekolah (Desain Seragam Kabupaten) */}
-          <div className="bg-white rounded-[1.5rem] p-3.5 sm:p-4 shadow-md border border-slate-200 flex flex-col gap-3 h-[480px] sm:h-[540px] lg:h-full min-h-0 overflow-hidden">
+          <div className={`bg-white rounded-[1.5rem] p-3.5 sm:p-4 shadow-md border border-slate-200 flex flex-col gap-3 h-[540px] lg:h-full min-h-0 overflow-hidden ${
+            mobileTab === "list" ? "flex" : "hidden lg:flex"
+          }`}>
 
             {/* Header Panel dengan Border Biru & Icon Filter */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">

@@ -82,7 +82,7 @@ export const HomeV2 = () => {
 
   if (loading) {
     return (
-      <div className="w-screen h-screen p-10 bg-gray-50 flex flex-col gap-6 font-poppins">
+      <div className="w-full h-screen p-10 bg-gray-50 flex flex-col gap-6 font-poppins">
         <Skeleton className="w-full h-[60vh] rounded-[40px]" />
         <div className="flex gap-6 h-[30vh]">
           <Skeleton className="w-1/3 h-full rounded-3xl" />
@@ -94,7 +94,7 @@ export const HomeV2 = () => {
   }
 
   return (
-    <div className="relative w-screen h-screen overflow-y-auto text-content font-poppins selection:bg-blue-600 selection:text-white scroll-smooth scrollbar-hide">
+    <div className="relative w-full h-screen overflow-y-auto text-content font-poppins selection:bg-blue-600 selection:text-white scroll-smooth scrollbar-hide">
       {/* Background Wallpaper */}
       <img
         src="/images/cmd/bc-cmdcenter-bg.webp"

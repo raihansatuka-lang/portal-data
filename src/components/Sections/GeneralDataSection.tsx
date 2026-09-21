@@ -192,24 +192,24 @@ export const GeneralDataSection: React.FC<Props> = ({
 
   return (
     <section className="w-full">
-      <div className="rounded-[2rem] bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_20px_60px_-20px_rgba(15,23,42,0.15)] px-6 py-5">
+      <div className="rounded-2xl sm:rounded-[2rem] bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_20px_60px_-20px_rgba(15,23,42,0.15)] px-4 py-4 sm:px-6 sm:py-5">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="w-1 h-5 rounded-full bg-blue-500 shrink-0" />
             <div>
-              <h2 className="text-sm font-extrabold text-slate-800 tracking-tight">
+              <h2 className="text-xs sm:text-sm font-extrabold text-slate-800 tracking-tight">
                 {displayTitle}
               </h2>
               {subtitle && (
-                <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 font-medium">{subtitle}</p>
               )}
             </div>
           </div>
 
           {/* Badge Last Update Sinkronisasi Dapodik */}
           {resolvedData.last_update ? (
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11px] font-semibold text-slate-600 bg-slate-100/90 border border-slate-200/80 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl self-start sm:self-auto shadow-2xs">
               <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <span>Pembaruan: {formatSyncTimestamp(resolvedData.last_update)}</span>
             </div>
@@ -220,8 +220,8 @@ export const GeneralDataSection: React.FC<Props> = ({
           ) : null}
         </div>
 
-        {/* 4 Cards Grid Simetris */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 4 Cards Grid Simetris (2 Kolom di Mobile, 4 Kolom di Desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {METRIC_CONFIG.map((m) => {
             const rawVal = resolvedData[m.key] ?? 0;
             const Icon = m.icon;
@@ -232,22 +232,22 @@ export const GeneralDataSection: React.FC<Props> = ({
               return (
                 <div
                   key={m.key}
-                  className={`group flex flex-col justify-between rounded-[1.4rem] bg-gradient-to-br ${m.gradient} shadow-lg ${m.shadow} p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:scale-[1.01] cursor-default min-h-[128px]`}
+                  className={`group flex flex-col justify-between rounded-xl sm:rounded-[1.4rem] bg-gradient-to-br ${m.gradient} shadow-md sm:shadow-lg ${m.shadow} p-3.5 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-default min-h-[110px] sm:min-h-[128px]`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100 leading-none">
+                    <p className="text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-blue-100 leading-none">
                       {m.label}
                     </p>
-                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-2xs">
-                      <Icon className="w-5 h-5 text-white" />
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white/20 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-2xs">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <p className="text-2xl sm:text-3xl font-black text-white leading-tight tabular-nums">
+                  <div className="mt-2.5 sm:mt-3">
+                    <p className="text-xl sm:text-3xl font-black text-white leading-tight tabular-nums">
                       {Number(rawVal).toLocaleString("id-ID")}
                     </p>
                     {subText && (
-                      <p className="text-[10px] text-blue-200/90 font-medium mt-1 truncate">
+                      <p className="text-[9px] sm:text-[10px] text-blue-200/90 font-medium mt-0.5 sm:mt-1 truncate">
                         {subText}
                       </p>
                     )}
@@ -260,26 +260,26 @@ export const GeneralDataSection: React.FC<Props> = ({
             return (
               <div
                 key={m.key}
-                className={`group flex flex-col justify-between rounded-[1.4rem] border ${m.border} ${m.bg} p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:border-slate-300/80 hover:bg-white cursor-default min-h-[128px]`}
+                className={`group flex flex-col justify-between rounded-xl sm:rounded-[1.4rem] border ${m.border} ${m.bg} p-3.5 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-slate-300/80 hover:bg-white cursor-default min-h-[110px] sm:min-h-[128px]`}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 leading-none">
+                  <p className="text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-500 leading-none">
                     {m.label}
                   </p>
                   <div
-                    className={`w-9 h-9 rounded-xl ${m.iconBg} flex items-center justify-center ${m.iconColor} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-2xs`}
+                    className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl ${m.iconBg} flex items-center justify-center ${m.iconColor} transition-transform duration-300 group-hover:scale-110 shadow-2xs`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <p className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tabular-nums transition-transform duration-200 origin-left group-hover:scale-[1.02]">
+                <div className="mt-2.5 sm:mt-3">
+                  <p className="text-xl sm:text-3xl font-black text-slate-900 leading-tight tabular-nums transition-transform duration-200 origin-left group-hover:scale-[1.02]">
                     {m.isPercentage
                       ? `${Number(rawVal).toFixed(1)}%`
                       : Number(rawVal).toLocaleString("id-ID")}
                   </p>
                   {subText && (
-                    <p className="text-[10px] text-slate-500 font-medium mt-1 truncate">
+                    <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-0.5 sm:mt-1 truncate">
                       {subText}
                     </p>
                   )}

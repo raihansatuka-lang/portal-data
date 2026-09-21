@@ -808,11 +808,11 @@ export const SekolahDetail = () => {
         {/* ═════════════════════════════════════════════════════════════════════
             1. HERO PROFIL SATUAN PENDIDIKAN
            ═════════════════════════════════════════════════════════════════════ */}
-        <section className="bg-white rounded-2xl p-6 sm:p-7 shadow-xs border border-slate-200/80 hover:border-slate-300/80 hover:shadow-sm transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center space-x-5">
+        <section className="bg-white rounded-2xl p-4 sm:p-7 shadow-xs border border-slate-200/80 hover:border-slate-300/80 hover:shadow-sm transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
             {/* School Avatar with Gentle Hover Scale */}
             <div
-              className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl flex items-center justify-center font-black text-2xl tracking-wider shadow-inner shrink-0 text-white transition-transform duration-300 hover:scale-105 cursor-default select-none"
+              className="w-16 h-16 sm:w-22 sm:h-22 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-xl sm:text-2xl tracking-wider shadow-inner shrink-0 text-white transition-transform duration-300 hover:scale-105 cursor-default select-none"
               style={{
                 backgroundColor: jenjangColor,
               }}
@@ -822,7 +822,7 @@ export const SekolahDetail = () => {
 
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
                   {school.nama}
                 </h2>
                 {isAktif ? (

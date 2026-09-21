@@ -342,6 +342,7 @@ export const ProvinsiDetail = () => {
   const [schoolSearch, setSchoolSearch] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("az");
   const [hoveredJenjang, setHoveredJenjang] = useState<string | null>(null);
+  const [showLegendMobile, setShowLegendMobile] = useState<boolean>(false);
 
   // ── Admin State ──────────────────────────────────────────────────────────
   const { isAdmin } = useAuth();
@@ -681,17 +682,17 @@ export const ProvinsiDetail = () => {
   }
 
   return (
-    <div className="w-screen min-h-screen font-poppins bg-[#f8fafc] overflow-x-hidden antialiased pb-16 selection:bg-blue-600 selection:text-white">
+    <div className="w-full min-h-screen font-poppins bg-[#f8fafc] overflow-x-hidden antialiased pb-16 selection:bg-blue-600 selection:text-white">
 
       {/* ══ SECTION 1: CLEAN LIGHT GLASS HEADER (Model C: Logo Center) ═══════ */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4">
 
           {/* Top Sub-Row: Breadcrumb (Left), Brand Logo (Center), & Actions (Right) */}
-          <div className="relative flex items-center justify-between gap-4 mb-3 pb-2.5 border-b border-slate-100">
+          <div className="relative flex items-center justify-between gap-2 sm:gap-4 mb-2.5 sm:mb-3 pb-2 sm:pb-2.5 border-b border-slate-100">
 
             {/* Breadcrumbs on Left */}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-slate-500 min-w-0 z-10">
+            <div className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-xs font-semibold text-slate-500 min-w-0 z-10 truncate">
               <Link to="/" className="hover:text-blue-600 transition-colors shrink-0">
                 Beranda
               </Link>
@@ -699,8 +700,8 @@ export const ProvinsiDetail = () => {
               <span className="text-blue-600 font-extrabold truncate">Portal Provinsi</span>
             </div>
 
-            {/* Official Brand Logo di Tengah-Tengah Navbar (Model C) */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
+            {/* Official Brand Logo di Tengah-Tengah Navbar (Desktop only agar tidak menimpa button di mobile) */}
+            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center justify-center pointer-events-auto">
               <Link to="/" className="transition-transform hover:scale-105" title="Berani Cerdas - Portal Data Pemetaan Sekolah">
                 <img
                   src="/logo.png"
@@ -714,20 +715,20 @@ export const ProvinsiDetail = () => {
             </div>
 
             {/* Action Buttons on Right */}
-            <div className="flex items-center gap-2.5 shrink-0 z-10">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 z-10">
               {isAdmin && (
                 <button
                   onClick={() => navigate("/admin/sekolah/create?from=/provinsi")}
-                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Sekolah</span>
+                  <Plus className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                  <span className="hidden xs:inline">Tambah Sekolah</span>
                 </button>
               )}
 
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
                 <span>Kembali</span>
@@ -736,11 +737,11 @@ export const ProvinsiDetail = () => {
           </div>
 
           {/* Main Header Row: Lambang Resmi Provinsi & Title (Paling Kiri) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-            <div className="flex items-center gap-3.5 sm:gap-4.5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 pt-1">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
 
               {/* Lambang Provinsi Sulawesi Tengah di Paling Kiri */}
-              <div className="w-12 h-14 sm:w-14 sm:h-16 bg-white rounded-2xl border border-slate-200/90 p-1.5 flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-11 h-13 sm:w-14 sm:h-16 bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-1.5 flex items-center justify-center shrink-0 shadow-xs">
                 <img
                   src="/images/kabupaten_kota.png/Sulawesi Tengah.png"
                   alt="Lambang Sulawesi Tengah"
@@ -753,14 +754,14 @@ export const ProvinsiDetail = () => {
 
               {/* Text Information Langsung di Samping Logo */}
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200/70 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 uppercase tracking-widest mb-1.5">
+                <div className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200/70 rounded-full px-2 sm:px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-indigo-700 uppercase tracking-widest mb-1 sm:mb-1.5">
                   <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-pulse" />
                   Kewenangan Pemerintah Provinsi Sulawesi Tengah
                 </div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
+                <h1 className="text-base sm:text-xl md:text-2xl font-black text-slate-900 leading-tight tracking-tight">
                   Dinas Pendidikan Provinsi Sulawesi Tengah
                 </h1>
-                <p className="text-slate-500 text-xs font-medium mt-0.5 line-clamp-1">
+                <p className="text-slate-500 text-[11px] sm:text-xs font-medium mt-0.5 line-clamp-2 sm:line-clamp-1">
                   Pengelolaan &amp; Pemetaan Satuan Pendidikan Menengah (SMA, SMK, SLB &amp; Sederajat) — 13 Kabupaten/Kota
                 </p>
               </div>
@@ -769,23 +770,25 @@ export const ProvinsiDetail = () => {
 
             {/* Quick Filter Active Indicator */}
             {(selectedCabdis !== null || selectedKabKode !== null) && (
-              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 shadow-2xs">
-                <div className="w-2 h-2 rounded-full bg-blue-600" />
-                <span className="text-xs font-semibold text-slate-700">
-                  <span className="text-slate-400 font-medium mr-1">Filter:</span>
-                  {selectedKabKode
-                    ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama
-                    : selectedCabdis
-                      ? `${CABDIS_INFO[selectedCabdis]?.nama} (${CABDIS_INFO[selectedCabdis]?.label})`
-                      : ""}
-                </span>
+              <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0 shadow-2xs w-full md:w-auto">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-semibold text-slate-700 truncate">
+                    <span className="text-slate-400 font-medium mr-1">Filter:</span>
+                    {selectedKabKode
+                      ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama
+                      : selectedCabdis
+                        ? `${CABDIS_INFO[selectedCabdis]?.nama} (${CABDIS_INFO[selectedCabdis]?.label})`
+                        : ""}
+                  </span>
+                </div>
                 <button
                   onClick={handleResetMap}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 hover:bg-white border border-transparent hover:border-slate-200 px-2 py-0.5 rounded-lg transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[10.5px] sm:text-[11px] font-bold text-slate-500 hover:text-blue-600 hover:bg-white border border-transparent hover:border-slate-200 px-2 py-0.5 rounded-lg transition-all cursor-pointer shrink-0"
                   title="Kembalikan tampilan ke seluruh wilayah Sulawesi Tengah"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span>Reset Tampilan</span>
+                  <span>Reset</span>
                 </button>
               </div>
             )}
@@ -796,113 +799,113 @@ export const ProvinsiDetail = () => {
       </header>
 
       {/* ══ SECTION 2: STAT CARDS (Clean Light Bento Grid) ═════════════════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4 sm:mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
 
           {/* Card 1: Total Sekolah Menengah */}
-          <div className="col-span-2 sm:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-4.5 text-white shadow-md shadow-blue-500/20 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-                <Building2 className="w-4.5 h-4.5" />
+          <div className="col-span-2 sm:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-3.5 sm:p-4.5 text-white shadow-md shadow-blue-500/20 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-widest opacity-85 bg-white/15 px-2 py-0.5 rounded-full">
+              <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest opacity-85 bg-white/15 px-2 py-0.5 rounded-full">
                 Total Sekolah
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black tracking-tight mb-0.5">
+              <p className="text-2xl sm:text-3xl font-black tracking-tight mb-0.5">
                 {loadingData ? "..." : totalStats.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[11px] opacity-80 font-semibold">
+              <p className="text-[10px] sm:text-[11px] opacity-80 font-semibold">
                 SMA, MA, SMK, SLB &amp; SMTK
               </p>
             </div>
           </div>
 
           {/* Card 2: SMA / MA */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SMA.iconBg, color: JENJANG_CONFIG.SMA.iconColor }}
               >
-                <GraduationCap className="w-4.5 h-4.5" />
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-2 py-0.5 rounded-full border border-purple-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-1.5 sm:px-2 py-0.5 rounded-full border border-purple-200/60`}>
                 SMA / MA
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : ((Number(totalStats.map["SMA"]?.total ?? 0)) + (Number(totalStats.map["MA"]?.total ?? 0))).toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
                 SMA: {totalStats.map["SMA"]?.total ?? 0} · MA: {totalStats.map["MA"]?.total ?? 0}
               </p>
             </div>
           </div>
 
           {/* Card 3: SMK / MAK */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SMK.iconBg, color: JENJANG_CONFIG.SMK.iconColor }}
               >
-                <Briefcase className="w-4.5 h-4.5" />
+                <Briefcase className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMK.text} ${JENJANG_CONFIG.SMK.bg} px-2 py-0.5 rounded-full border border-pink-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMK.text} ${JENJANG_CONFIG.SMK.bg} px-1.5 sm:px-2 py-0.5 rounded-full border border-pink-200/60`}>
                 SMK / Vokasi
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : Number(totalStats.map["SMK"]?.total ?? 0).toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
                 {totalStats.map["SMK"]?.total_negeri ?? 0}N · {totalStats.map["SMK"]?.total_swasta ?? 0}S
               </p>
             </div>
           </div>
 
           {/* Card 4: SLB (Pendidikan Khusus) */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SLB.iconBg, color: JENJANG_CONFIG.SLB.iconColor }}
               >
-                <Users className="w-4.5 h-4.5" />
+                <Users className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SLB.text} ${JENJANG_CONFIG.SLB.bg} px-2 py-0.5 rounded-full border border-rose-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SLB.text} ${JENJANG_CONFIG.SLB.bg} px-1.5 sm:px-2 py-0.5 rounded-full border border-rose-200/60`}>
                 SLB
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : Number(totalStats.map["SLB"]?.total ?? 0).toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
                 {totalStats.map["SLB"]?.total_negeri ?? 0}N · {totalStats.map["SLB"]?.total_swasta ?? 0}S
               </p>
             </div>
           </div>
 
           {/* Card 5: Wilayah 3T / Terpencil */}
-          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-cyan-50 text-cyan-600 shadow-2xs">
-                <MapPin className="w-4.5 h-4.5" />
+          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-cyan-50 text-cyan-600 shadow-2xs">
+                <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-full border border-cyan-200/60">
+              <span className="text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest text-cyan-700 bg-cyan-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-cyan-200/60">
                 Sekolah 3T
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.total3t.toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
                 Afirmasi Terdepan / Terluar
               </p>
             </div>
@@ -912,11 +915,11 @@ export const ProvinsiDetail = () => {
       </div>
 
       {/* ══ SECTION 3: PETA (2/3) + PANEL LENGKAP FILTER & LIST (1/3) ═══════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4 sm:mt-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-auto lg:h-[620px]">
 
           {/* Peta dengan Akselerasi Canvas & Cluster Super Smooth */}
-          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[500px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
+          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[360px] sm:h-[460px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
             <img
               src="/images/cmd/bc-cmdcenter-bg.webp"
               alt=""
@@ -1019,26 +1022,26 @@ export const ProvinsiDetail = () => {
             </div>
 
             {/* Floating Dual-Mode Switch (Top Center) */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-1 shadow-lg border border-slate-200/90 flex items-center gap-1">
+            <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-10">
+              <div className="bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl p-1 shadow-md border border-slate-200/90 flex items-center gap-1">
                 <button
                   onClick={() => setMapMode("cabdis")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${mapMode === "cabdis"
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[10.5px] sm:text-xs font-extrabold transition-all cursor-pointer ${mapMode === "cabdis"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                     }`}
                 >
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Peta Wilayah Cabdis</span>
+                  <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                  <span>Cabdis</span>
                 </button>
                 <button
                   onClick={() => setMapMode("titik")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${mapMode === "titik"
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[10.5px] sm:text-xs font-extrabold transition-all cursor-pointer ${mapMode === "titik"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                     }`}
                 >
-                  <MapPin className="w-3.5 h-3.5" />
+                  <MapPin className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                   <span>Sebaran Titik</span>
                 </button>
               </div>
@@ -1046,21 +1049,21 @@ export const ProvinsiDetail = () => {
 
             {/* Floating Active Region Banner on Map */}
             {(selectedCabdis !== null || selectedKabKode !== null) && (
-              <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 max-w-[90%]">
-                <div className="bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-md border border-slate-200/90 flex items-center gap-2.5 text-xs text-slate-800">
-                  <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-                  <span className="text-[11px] text-slate-500 font-medium">Wilayah:</span>
-                  <span className="font-bold text-[11px] text-slate-900 truncate max-w-[200px] sm:max-w-xs">
+              <div className="absolute top-13 sm:top-16 left-1/2 -translate-x-1/2 z-10 max-w-[94%] sm:max-w-[90%]">
+                <div className="bg-white/95 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl shadow-md border border-slate-200/90 flex items-center gap-2 text-xs text-slate-800">
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-600 shrink-0" />
+                  <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Wilayah:</span>
+                  <span className="font-bold text-[10.5px] sm:text-[11px] text-slate-900 truncate max-w-[150px] sm:max-w-xs">
                     {selectedKabKode
                       ? KABUPATEN_CENTROIDS[selectedKabKode]?.nama
                       : selectedCabdis
                         ? `${CABDIS_INFO[selectedCabdis]?.nama} (${CABDIS_INFO[selectedCabdis]?.label})`
                         : ""}
                   </span>
-                  <div className="w-px h-3.5 bg-slate-200 shrink-0" />
+                  <div className="w-px h-3 sm:h-3.5 bg-slate-200 shrink-0" />
                   <button
                     onClick={handleResetMap}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-0.5 rounded-lg transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[10.5px] sm:text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-lg transition-all cursor-pointer"
                     title="Kembalikan tampilan ke seluruh wilayah Sulawesi Tengah"
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -1071,58 +1074,72 @@ export const ProvinsiDetail = () => {
             )}
 
             {/* Floating Zoom & Map Controls (Top Left) */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-col gap-1 sm:gap-1.5">
               <button
                 onClick={() => mapRef.current?.zoomIn()}
-                className="w-8 h-8 bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-700 font-bold hover:bg-slate-50 transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-700 font-bold hover:bg-slate-50 transition-all cursor-pointer text-xs sm:text-sm"
                 title="Perbesar"
               >
                 +
               </button>
               <button
                 onClick={() => mapRef.current?.zoomOut()}
-                className="w-8 h-8 bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-700 font-bold hover:bg-slate-50 transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-700 font-bold hover:bg-slate-50 transition-all cursor-pointer text-xs sm:text-sm"
                 title="Perkecil"
               >
                 −
               </button>
               <button
                 onClick={handleResetMap}
-                className="w-8 h-8 bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md border border-slate-200 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-all cursor-pointer"
                 title="Reset Tampilan Seluruh Sulawesi Tengah"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
               </button>
             </div>
 
-            {/* Dynamic Legenda di Kiri Bawah */}
-            <div className="absolute bottom-4 left-4 z-10 max-w-[calc(100%-2rem)]">
+            {/* Dynamic Legenda di Kiri Bawah (Collapsible di Mobile) */}
+            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-sm">
               {mapMode === "cabdis" ? (
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl px-3.5 py-2.5 shadow-lg border border-slate-200/80 max-w-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">6 Wilayah Cabang Dinas</span>
-                    <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Resmi Disdik</span>
+                <div>
+                  {/* Tombol Toggle Legenda Mobile */}
+                  <div className="sm:hidden mb-1">
+                    <button
+                      onClick={() => setShowLegendMobile(!showLegendMobile)}
+                      className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-md border border-slate-200/90 text-[10px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Building2 className="w-3 h-3 text-blue-600" />
+                      <span>{showLegendMobile ? "Tutup Legenda" : "Legenda 6 Cabdis"}</span>
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10.5px]">
-                    {Object.values(CABDIS_INFO).map((c) => {
-                      const isFocused = selectedCabdis === c.id;
-                      return (
-                        <button
-                          key={c.id}
-                          onClick={() => handleFocusCabdis(c.id)}
-                          className={`flex items-center gap-1.5 text-left transition-all cursor-pointer px-1 py-0.5 rounded-lg ${isFocused ? "bg-slate-100 font-black scale-105" : "hover:opacity-100 opacity-85"
-                            }`}
-                        >
-                          <span className="w-2.5 h-2.5 rounded-sm shrink-0 shadow-2xs" style={{ background: c.color }} />
-                          <span className="font-bold text-slate-700 truncate">{c.nama}</span>
-                        </button>
-                      );
-                    })}
+
+                  {/* Konten Legenda (Selalu tampil di desktop, toggle di mobile) */}
+                  <div className={`${showLegendMobile ? "block" : "hidden sm:block"} bg-white/95 backdrop-blur-md rounded-2xl px-3 sm:px-3.5 py-2 sm:py-2.5 shadow-lg border border-slate-200/80`}>
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <span className="text-[9px] sm:text-[9.5px] font-black uppercase text-slate-400 tracking-wider">6 Wilayah Cabang Dinas</span>
+                      <span className="text-[8.5px] sm:text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full">Resmi Disdik</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-2.5 sm:gap-x-3 gap-y-1 text-[9.5px] sm:text-[10.5px]">
+                      {Object.values(CABDIS_INFO).map((c) => {
+                        const isFocused = selectedCabdis === c.id;
+                        return (
+                          <button
+                            key={c.id}
+                            onClick={() => handleFocusCabdis(c.id)}
+                            className={`flex items-center gap-1 sm:gap-1.5 text-left transition-all cursor-pointer px-1 py-0.5 rounded-lg ${isFocused ? "bg-slate-100 font-black scale-105" : "hover:opacity-100 opacity-85"
+                              }`}
+                          >
+                            <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-sm shrink-0 shadow-2xs" style={{ background: c.color }} />
+                            <span className="font-bold text-slate-700 truncate">{c.nama}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl px-3 py-2 shadow-lg border border-slate-200/80 flex flex-wrap gap-x-3 gap-y-1.5 items-center">
-                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Jenjang:</span>
+                <div className="bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl px-2.5 sm:px-3 py-1.5 sm:py-2 shadow-lg border border-slate-200/80 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1 items-center">
+                  <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Jenjang:</span>
                   {JENJANG_PROVINSI.map((j) => {
                     const cfg = JENJANG_CONFIG[j];
                     if (!cfg) return null;
@@ -1135,15 +1152,15 @@ export const ProvinsiDetail = () => {
                         onClick={() => setFilterJenjang(filterJenjang === j ? "semua" : j)}
                         onMouseEnter={() => setHoveredJenjang(j)}
                         onMouseLeave={() => setHoveredJenjang(null)}
-                        className={`flex items-center gap-1.5 transition-all cursor-pointer px-1.5 py-0.5 rounded-lg ${isActive ? "bg-slate-100 font-black" : "opacity-85 hover:opacity-100"
+                        className={`flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer px-1 sm:px-1.5 py-0.5 rounded-lg ${isActive ? "bg-slate-100 font-black" : "opacity-85 hover:opacity-100"
                           }`}
                       >
                         <div
-                          className="w-2.5 h-2.5 rounded-full border-2 border-white shadow-2xs"
+                          className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-white shadow-2xs"
                           style={{ background: cfg.color }}
                         />
-                        <span className="text-[10px] font-bold text-slate-700">{j}</span>
-                        <span className="text-[9px] font-semibold text-slate-400">({count})</span>
+                        <span className="text-[9.5px] sm:text-[10px] font-bold text-slate-700">{j}</span>
+                        <span className="text-[8.5px] sm:text-[9px] font-semibold text-slate-400">({count})</span>
                       </button>
                     );
                   })}
@@ -1163,7 +1180,7 @@ export const ProvinsiDetail = () => {
           </div>
 
           {/* Panel Kanan: Filter Komprehensif & Daftar Sekolah (Desain Seragam Kabupaten) */}
-          <div className="bg-white rounded-[1.5rem] p-4 shadow-md border border-slate-200 flex flex-col gap-3 h-[580px] lg:h-full min-h-0 overflow-hidden">
+          <div className="bg-white rounded-[1.5rem] p-3.5 sm:p-4 shadow-md border border-slate-200 flex flex-col gap-3 h-[480px] sm:h-[540px] lg:h-full min-h-0 overflow-hidden">
 
             {/* Header Panel dengan Border Biru & Icon Filter */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">

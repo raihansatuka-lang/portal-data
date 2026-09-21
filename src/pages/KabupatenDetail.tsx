@@ -25,6 +25,7 @@ import {
   Filter,
   ArrowUpDown,
   ChevronDown,
+  X,
 } from "lucide-react";
 import { PemetaanService } from "@/services/pemetaanService";
 import { AdminService } from "@/services/adminService";
@@ -59,22 +60,21 @@ const KABUPATEN_INFO: Record<string, {
   center: [number, number];
   zoom: number;
   bounds: [[number, number], [number, number]];
-  logoEmoji?: string;
   logoImg?: string;
 }> = {
-  "7271": { nama: "Kota Palu", slug: "cabdis-1", center: [-0.896, 119.870], zoom: 12, bounds: [[-1.35, 119.45], [-0.40, 120.30]], logoEmoji: "🏙️", logoImg: "/images/kabupaten_kota.png/Kota Palu.png" },
-  "7210": { nama: "Kab. Sigi", slug: "cabdis-1", center: [-1.463, 119.963], zoom: 9, bounds: [[-2.45, 119.20], [-0.50, 120.70]], logoEmoji: "🏔️", logoImg: "/images/kabupaten_kota.png/Kabupaten Sigi.png" },
-  "7203": { nama: "Kab. Donggala", slug: "cabdis-2", center: [-0.350, 119.811], zoom: 8, bounds: [[-1.85, 118.80], [1.25, 120.60]], logoEmoji: "⛵", logoImg: "/images/kabupaten_kota.png/Kabupaten Donggala.png" },
-  "7208": { nama: "Kab. Parigi Moutong", slug: "cabdis-2", center: [-0.222, 120.641], zoom: 8, bounds: [[-1.60, 119.40], [1.20, 121.80]], logoEmoji: "🌾", logoImg: "/images/kabupaten_kota.png/Kabupaten Parigi Moutong.png" },
-  "7202": { nama: "Kab. Poso", slug: "cabdis-3", center: [-1.671, 120.512], zoom: 9, bounds: [[-2.65, 119.70], [-0.70, 121.90]], logoEmoji: "🌊", logoImg: "/images/kabupaten_kota.png/Kabupaten Poso.png" },
-  "7209": { nama: "Kab. Tojo Una-Una", slug: "cabdis-3", center: [-0.873, 121.642], zoom: 9, bounds: [[-2.00, 120.50], [0.30, 122.85]], logoEmoji: "🏝️", logoImg: "/images/kabupaten_kota.png/Kabupaten Tojo Una-Una.png" },
-  "7206": { nama: "Kab. Morowali", slug: "cabdis-4", center: [-2.895, 122.310], zoom: 9, bounds: [[-4.00, 121.00], [-1.70, 123.60]], logoEmoji: "⚙️", logoImg: "/images/kabupaten_kota.png/Kabupaten Morowali.png" },
-  "7212": { nama: "Kab. Morowali Utara", slug: "cabdis-4", center: [-1.852, 121.444], zoom: 9, bounds: [[-3.00, 120.30], [-0.90, 122.50]], logoEmoji: "🌴", logoImg: "/images/kabupaten_kota.png/Kabupaten Morowali Utara.png" },
-  "7201": { nama: "Kab. Banggai", slug: "cabdis-5", center: [-1.022, 122.659], zoom: 9, bounds: [[-2.20, 121.50], [0.10, 124.00]], logoEmoji: "🐬", logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai.png" },
-  "7207": { nama: "Kab. Banggai Kepulauan", slug: "cabdis-5", center: [-1.400, 123.154], zoom: 9, bounds: [[-2.50, 122.30], [-0.50, 124.50]], logoEmoji: "🐚", logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai Kepulauan.png" },
-  "7211": { nama: "Kab. Banggai Laut", slug: "cabdis-5", center: [-1.590, 123.502], zoom: 10, bounds: [[-2.50, 122.50], [-0.80, 124.50]], logoEmoji: "🐙", logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai Laut.png" },
-  "7204": { nama: "Kab. Tolitoli", slug: "cabdis-6", center: [0.981, 120.663], zoom: 9, bounds: [[0.10, 119.60], [2.25, 121.95]], logoEmoji: "🚢", logoImg: "/images/kabupaten_kota.png/Kabupaten Tolitoli.png" },
-  "7205": { nama: "Kab. Buol", slug: "cabdis-6", center: [0.996, 121.534], zoom: 9, bounds: [[0.20, 120.40], [2.10, 122.60]], logoEmoji: "🌿", logoImg: "/images/kabupaten_kota.png/Kabupaten Buol.png" },
+  "7271": { nama: "Kota Palu", slug: "cabdis-1", center: [-0.896, 119.870], zoom: 12, bounds: [[-1.35, 119.45], [-0.40, 120.30]], logoImg: "/images/kabupaten_kota.png/Kota Palu.png" },
+  "7210": { nama: "Kab. Sigi", slug: "cabdis-1", center: [-1.463, 119.963], zoom: 9, bounds: [[-2.45, 119.20], [-0.50, 120.70]], logoImg: "/images/kabupaten_kota.png/Kabupaten Sigi.png" },
+  "7203": { nama: "Kab. Donggala", slug: "cabdis-2", center: [-0.350, 119.811], zoom: 8, bounds: [[-1.85, 118.80], [1.25, 120.60]], logoImg: "/images/kabupaten_kota.png/Kabupaten Donggala.png" },
+  "7208": { nama: "Kab. Parigi Moutong", slug: "cabdis-2", center: [-0.222, 120.641], zoom: 8, bounds: [[-1.60, 119.40], [1.20, 121.80]], logoImg: "/images/kabupaten_kota.png/Kabupaten Parigi Moutong.png" },
+  "7202": { nama: "Kab. Poso", slug: "cabdis-3", center: [-1.671, 120.512], zoom: 9, bounds: [[-2.65, 119.70], [-0.70, 121.90]], logoImg: "/images/kabupaten_kota.png/Kabupaten Poso.png" },
+  "7209": { nama: "Kab. Tojo Una-Una", slug: "cabdis-3", center: [-0.873, 121.642], zoom: 9, bounds: [[-2.00, 120.50], [0.30, 122.85]], logoImg: "/images/kabupaten_kota.png/Kabupaten Tojo Una-Una.png" },
+  "7206": { nama: "Kab. Morowali", slug: "cabdis-4", center: [-2.895, 122.310], zoom: 9, bounds: [[-4.00, 121.00], [-1.70, 123.60]], logoImg: "/images/kabupaten_kota.png/Kabupaten Morowali.png" },
+  "7212": { nama: "Kab. Morowali Utara", slug: "cabdis-4", center: [-1.852, 121.444], zoom: 9, bounds: [[-3.00, 120.30], [-0.90, 122.50]], logoImg: "/images/kabupaten_kota.png/Kabupaten Morowali Utara.png" },
+  "7201": { nama: "Kab. Banggai", slug: "cabdis-5", center: [-1.022, 122.659], zoom: 9, bounds: [[-2.20, 121.50], [0.10, 124.00]], logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai.png" },
+  "7207": { nama: "Kab. Banggai Kepulauan", slug: "cabdis-5", center: [-1.400, 123.154], zoom: 9, bounds: [[-2.50, 122.30], [-0.50, 124.50]], logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai Kepulauan.png" },
+  "7211": { nama: "Kab. Banggai Laut", slug: "cabdis-5", center: [-1.590, 123.502], zoom: 10, bounds: [[-2.50, 122.50], [-0.80, 124.50]], logoImg: "/images/kabupaten_kota.png/Kabupaten Banggai Laut.png" },
+  "7204": { nama: "Kab. Tolitoli", slug: "cabdis-6", center: [0.981, 120.663], zoom: 9, bounds: [[0.10, 119.60], [2.25, 121.95]], logoImg: "/images/kabupaten_kota.png/Kabupaten Tolitoli.png" },
+  "7205": { nama: "Kab. Buol", slug: "cabdis-6", center: [0.996, 121.534], zoom: 9, bounds: [[0.20, 120.40], [2.10, 122.60]], logoImg: "/images/kabupaten_kota.png/Kabupaten Buol.png" },
 };
 
 const KECAMATAN_COLORS = [
@@ -326,6 +326,7 @@ export const KabupatenDetail = () => {
   const [schoolSearch, setSchoolSearch] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("az");
   const [showKecamatanPolygon, setShowKecamatanPolygon] = useState<boolean>(true);
+  const [showLegendMobile, setShowLegendMobile] = useState<boolean>(false);
 
   // Hover states
   const [hoveredJenjang, setHoveredJenjang] = useState<string | null>(null);
@@ -657,26 +658,26 @@ export const KabupatenDetail = () => {
   }
 
   return (
-    <div className="w-screen min-h-screen font-poppins bg-[#f8fafc] overflow-x-hidden antialiased pb-16 selection:bg-blue-600 selection:text-white">
+    <div className="w-full min-h-screen font-poppins bg-[#f8fafc] overflow-x-hidden antialiased pb-16 selection:bg-blue-600 selection:text-white">
 
       {/* ══ SECTION 1: CLEAN LIGHT GLASS HEADER (Executive GIS Style) ═════ */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4">
 
           {/* Top Sub-Row: Breadcrumb (Left), Logo Brand (Center), & Actions (Right) */}
-          <div className="relative flex items-center justify-between gap-4 mb-3 pb-2.5 border-b border-slate-100">
+          <div className="relative flex items-center justify-between gap-3 sm:gap-4 mb-2.5 sm:mb-3 pb-2 sm:pb-2.5 border-b border-slate-100">
 
             {/* Breadcrumbs on Left */}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-slate-500 min-w-0 z-10">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold text-slate-500 min-w-0 z-10">
               <Link to="/" className="hover:text-blue-600 transition-colors shrink-0">
                 Beranda
               </Link>
               <span className="text-slate-300">›</span>
-              <span className="text-blue-600 font-extrabold truncate">{info.nama}</span>
+              <span className="text-blue-600 font-extrabold truncate max-w-[130px] sm:max-w-none">{info.nama}</span>
             </div>
 
             {/* Official Brand Logo di Tengah-Tengah Navbar (Model C) */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
+            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center justify-center pointer-events-auto">
               <Link to="/" className="transition-transform hover:scale-105" title="Berani Cerdas - Portal Data Pemetaan Sekolah">
                 <img
                   src="/logo.png"
@@ -690,20 +691,20 @@ export const KabupatenDetail = () => {
             </div>
 
             {/* Action Buttons on Right */}
-            <div className="flex items-center gap-2.5 shrink-0 z-10">
+            <div className="flex items-center gap-2 shrink-0 z-10">
               {isAdmin && (
                 <button
                   onClick={() => navigate(`/admin/sekolah/create?kode_kabupaten=${kode}&from=/kabupaten/${kode}`)}
-                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Sekolah</span>
+                  <span className="hidden sm:inline">Tambah Sekolah</span>
                 </button>
               )}
 
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer"
+                className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
                 <span>Kembali</span>
@@ -712,12 +713,12 @@ export const KabupatenDetail = () => {
           </div>
 
           {/* Main Header Row: District Emblem & Title (Kiri) + Switcher Kabupaten (Kanan) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-            <div className="flex items-center gap-3.5 sm:gap-4.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 pt-1">
+            <div className="flex items-center gap-3 sm:gap-4.5">
 
               {/* District Emblem di Paling Kiri */}
               {info.logoImg && (
-                <div className="w-11 h-12 sm:w-13 sm:h-14 bg-white rounded-2xl border border-slate-200/90 p-1.5 flex items-center justify-center shrink-0 shadow-xs">
+                <div className="w-10 h-11 sm:w-13 sm:h-14 bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-1.5 flex items-center justify-center shrink-0 shadow-xs">
                   <img
                     src={info.logoImg}
                     alt={info.nama}
@@ -731,11 +732,13 @@ export const KabupatenDetail = () => {
 
               {/* Text Information Langsung di Samping Logo Daerah */}
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200/60 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-1.5">
+                <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200/60 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-1">
                   <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />
-                  {filterWewenang === "kab" ? "Kewenangan Kabupaten / Kota" : "Semua Jenjang Satuan Pendidikan"}
+                  <span className="truncate max-w-[200px] sm:max-w-none">
+                    {filterWewenang === "kab" ? "Kewenangan Kabupaten / Kota" : "Semua Jenjang Satuan Pendidikan"}
+                  </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
+                <h1 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
                   Dinas Pendidikan {info.nama}
                 </h1>
                 <p className="text-slate-500 text-xs font-medium mt-0.5 line-clamp-1">
@@ -746,39 +749,41 @@ export const KabupatenDetail = () => {
             </div>
 
             {/* ── Dropdown Switcher Kabupaten / Kota ── */}
-            <div className="relative shrink-0 self-start sm:self-center" ref={kabupatenDropdownRef}>
+            <div className="relative shrink-0 self-start sm:self-center w-full sm:w-auto" ref={kabupatenDropdownRef}>
               <button
                 onClick={() => setKabupatenDropdownOpen(!kabupatenDropdownOpen)}
-                className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs ${kabupatenDropdownOpen
+                className={`group flex items-center justify-between sm:justify-start gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs w-full sm:w-auto ${kabupatenDropdownOpen
                   ? "bg-blue-600 text-white shadow-blue-600/25 ring-2 ring-blue-200"
                   : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-blue-300 hover:shadow-sm"
                   }`}
                 title="Pilih dan Ganti Kabupaten / Kota"
               >
-                <div className="w-6 h-6 rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200/60 shadow-2xs">
-                  {info.logoImg ? (
-                    <img src={info.logoImg} alt="" className="w-full h-full object-contain" />
-                  ) : (
-                    <MapPin className={`w-3.5 h-3.5 ${kabupatenDropdownOpen ? "text-white" : "text-blue-600"}`} />
-                  )}
-                </div>
-                <div className="text-left flex flex-col">
-                  <span className={`text-[8.5px] uppercase tracking-wider font-extrabold ${kabupatenDropdownOpen ? "text-blue-100" : "text-slate-400"}`}>
-                    Pilih Wilayah Lain
-                  </span>
-                  <span className="leading-tight font-black truncate max-w-[140px] sm:max-w-[170px]">
-                    {info.nama}
-                  </span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-6 h-6 rounded-xl overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200/60 shadow-2xs">
+                    {info.logoImg ? (
+                      <img src={info.logoImg} alt="" className="w-full h-full object-contain" />
+                    ) : (
+                      <MapPin className={`w-3.5 h-3.5 ${kabupatenDropdownOpen ? "text-white" : "text-blue-600"}`} />
+                    )}
+                  </div>
+                  <div className="text-left flex flex-col min-w-0">
+                    <span className={`text-[8.5px] uppercase tracking-wider font-extrabold ${kabupatenDropdownOpen ? "text-blue-100" : "text-slate-400"}`}>
+                      Pilih Wilayah Lain
+                    </span>
+                    <span className="leading-tight font-black truncate max-w-[160px] sm:max-w-[170px]">
+                      {info.nama}
+                    </span>
+                  </div>
                 </div>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${kabupatenDropdownOpen ? "rotate-180 text-white" : "text-slate-400 group-hover:text-blue-600"
+                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${kabupatenDropdownOpen ? "rotate-180 text-white" : "text-slate-400 group-hover:text-blue-600"
                     }`}
                 />
               </button>
 
               {/* Popover Menu Dropdown */}
               {kabupatenDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-full sm:w-80 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="px-3 py-1.5 mb-1.5 border-b border-slate-100 flex items-center justify-between">
                     <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400">
                       Ganti Kabupaten / Kota
@@ -822,7 +827,7 @@ export const KabupatenDetail = () => {
                               {kInfo.logoImg ? (
                                 <img src={kInfo.logoImg} alt="" className="w-full h-full object-contain" />
                               ) : (
-                                <span>{kInfo.logoEmoji || "🏛️"}</span>
+                                <Building2 className="w-3.5 h-3.5 text-slate-500" />
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -848,44 +853,44 @@ export const KabupatenDetail = () => {
       </header>
 
       {/* ══ SECTION 2: STAT CARDS (Clean Light Bento Grid) ═════════════════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4 sm:mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
 
           {/* Card 1: Total Sekolah */}
-          <div className="col-span-2 sm:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-4.5 text-white shadow-md shadow-blue-500/20 flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-                <Building2 className="w-4.5 h-4.5" />
+          <div className="col-span-2 sm:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-3.5 sm:p-4.5 text-white shadow-md shadow-blue-500/20 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <span className="text-[9px] font-black uppercase tracking-widest opacity-85 bg-white/15 px-2 py-0.5 rounded-full">
                 Total Sekolah
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black tracking-tight mb-0.5">
+              <p className="text-2xl sm:text-3xl font-black tracking-tight mb-0.5">
                 {loadingData ? "..." : totalStats.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[11px] opacity-80 font-semibold">
+              <p className="text-[10px] sm:text-[11px] opacity-80 font-semibold">
                 {filterWewenang === "kab" ? "PAUD–SMP & Dikmas" : "Semua Jenjang"}
               </p>
             </div>
           </div>
 
           {/* Card 2: TK / PAUD */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.TK.iconBg, color: JENJANG_CONFIG.TK.iconColor }}
               >
-                <GraduationCap className="w-4.5 h-4.5" />
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.TK.text} ${JENJANG_CONFIG.TK.bg} px-2 py-0.5 rounded-full border border-amber-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.TK.text} ${JENJANG_CONFIG.TK.bg} px-2 py-0.5 rounded-full border border-amber-200/60`}>
                 PAUD / TK
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.tk.total.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
@@ -895,20 +900,20 @@ export const KabupatenDetail = () => {
           </div>
 
           {/* Card 3: SD / MI */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SD.iconBg, color: JENJANG_CONFIG.SD.iconColor }}
               >
-                <GraduationCap className="w-4.5 h-4.5" />
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SD.text} ${JENJANG_CONFIG.SD.bg} px-2 py-0.5 rounded-full border border-emerald-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SD.text} ${JENJANG_CONFIG.SD.bg} px-2 py-0.5 rounded-full border border-emerald-200/60`}>
                 SD / MI
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.sd.total.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
@@ -918,20 +923,20 @@ export const KabupatenDetail = () => {
           </div>
 
           {/* Card 4: SMP / MTs */}
-          <div className="bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SMP.iconBg, color: JENJANG_CONFIG.SMP.iconColor }}
               >
-                <GraduationCap className="w-4.5 h-4.5" />
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMP.text} ${JENJANG_CONFIG.SMP.bg} px-2 py-0.5 rounded-full border border-sky-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMP.text} ${JENJANG_CONFIG.SMP.bg} px-2 py-0.5 rounded-full border border-sky-200/60`}>
                 SMP / MTs
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.smp.total.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
@@ -941,20 +946,20 @@ export const KabupatenDetail = () => {
           </div>
 
           {/* Card 5: SMA / MA */}
-          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2.5">
+          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
                 style={{ background: JENJANG_CONFIG.SMA.iconBg, color: JENJANG_CONFIG.SMA.iconColor }}
               >
-                <GraduationCap className="w-4.5 h-4.5" />
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-2 py-0.5 rounded-full border border-purple-200/60`}>
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-2 py-0.5 rounded-full border border-purple-200/60`}>
                 SMA Sederajat
               </span>
             </div>
             <div>
-              <p className="text-3xl font-black text-slate-800 tracking-tight">
+              <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.sma.total.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
@@ -967,11 +972,11 @@ export const KabupatenDetail = () => {
       </div>
 
       {/* ══ SECTION 3: PETA (2/3) + PANEL LENGKAP FILTER & LIST (1/3) ═══════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ minHeight: "560px" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4 sm:mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-4" style={{ minHeight: "520px" }}>
 
           {/* Peta dengan Akselerasi Canvas & Cluster Super Smooth */}
-          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[520px] lg:h-full rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
+          <div ref={mapContainerRef} className="lg:col-span-2 relative h-[360px] sm:h-[460px] lg:h-full rounded-2xl sm:rounded-[1.5rem] overflow-hidden shadow-md border border-slate-200 bg-slate-100">
             <img
               src="/images/cmd/bc-cmdcenter-bg.webp"
               alt=""
@@ -1044,6 +1049,12 @@ export const KabupatenDetail = () => {
                     hoveredJenjang={hoveredJenjang}
                     onSchoolClick={(school) => {
                       setSelectedSchool(school);
+                      if (school.npsn && schoolCardRefs.current[school.npsn]) {
+                        schoolCardRefs.current[school.npsn]?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "nearest",
+                        });
+                      }
                     }}
                     clusterRef={clusterRef}
                     markerMapRef={markerMapRef}
@@ -1053,24 +1064,24 @@ export const KabupatenDetail = () => {
             </div>
 
             {/* ── Kontrol Zoom & Reset di Kiri Atas Peta ── */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10 flex flex-col gap-1">
               <button
                 onClick={() => mapRef.current?.zoomIn()}
-                className="w-8 h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-600 font-bold text-base hover:bg-white transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-600 font-bold text-sm sm:text-base hover:bg-white transition-all cursor-pointer"
                 title="Zoom In"
               >
                 +
               </button>
               <button
                 onClick={() => mapRef.current?.zoomOut()}
-                className="w-8 h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-600 font-bold text-base hover:bg-white transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-600 font-bold text-sm sm:text-base hover:bg-white transition-all cursor-pointer"
                 title="Zoom Out"
               >
                 −
               </button>
               <button
                 onClick={() => mapRef.current?.setView(info.center, info.zoom, { animate: true })}
-                className="w-8 h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-500 hover:text-blue-600 text-sm hover:bg-white transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 rounded-xl shadow border border-white/60 flex items-center justify-center text-slate-500 hover:text-blue-600 text-xs sm:text-sm hover:bg-white transition-all cursor-pointer"
                 title="Reset tampilan"
               >
                 ⌂
@@ -1078,10 +1089,10 @@ export const KabupatenDetail = () => {
             </div>
 
             {/* ── Toggle Poligon Batas Kecamatan di Kanan Atas Peta ── */}
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
               <button
                 onClick={() => setShowKecamatanPolygon(!showKecamatanPolygon)}
-                className={`group flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md backdrop-blur-md border ${showKecamatanPolygon
+                className={`group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[10.5px] sm:text-xs font-bold transition-all duration-200 cursor-pointer shadow-md backdrop-blur-md border ${showKecamatanPolygon
                     ? "bg-white/95 text-blue-700 border-blue-200/90 hover:bg-white hover:border-blue-300 shadow-blue-500/10"
                     : "bg-white/90 text-slate-500 border-slate-200 hover:bg-white hover:text-slate-800"
                   }`}
@@ -1091,7 +1102,7 @@ export const KabupatenDetail = () => {
                   }`} />
                 <span className="hidden sm:inline">Poligon Kecamatan</span>
                 <span
-                  className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md transition-colors ${showKecamatanPolygon
+                  className={`text-[8.5px] sm:text-[9px] font-extrabold px-1.5 py-0.5 rounded-md transition-colors ${showKecamatanPolygon
                       ? "bg-blue-100/80 text-blue-700"
                       : "bg-slate-100 text-slate-400"
                     }`}
@@ -1102,8 +1113,15 @@ export const KabupatenDetail = () => {
             </div>
 
             {/* Legenda Dinamis di Peta (Termasuk PKBM & Kursus) */}
-            <div className="absolute bottom-4 left-4 z-10">
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-3.5 py-2.5 shadow-md border border-white/70 flex flex-wrap gap-x-3.5 gap-y-1.5 max-w-md">
+            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-10 max-w-[calc(100%-24px)] sm:max-w-md">
+              <button
+                onClick={() => setShowLegendMobile(!showLegendMobile)}
+                className="sm:hidden flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] font-bold text-slate-700 mb-1.5 cursor-pointer"
+              >
+                <Layers className="w-3 h-3 text-blue-600" />
+                <span>{showLegendMobile ? "Tutup Legenda" : "Legenda Jenjang"}</span>
+              </button>
+              <div className={`${showLegendMobile ? "flex" : "hidden"} sm:flex bg-white/95 backdrop-blur-sm rounded-xl sm:rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-md border border-white/70 flex-wrap gap-x-2.5 sm:gap-x-3.5 gap-y-1.5 max-h-36 sm:max-h-none overflow-y-auto`}>
                 {Object.keys(JENJANG_CONFIG).filter((jKey) => {
                   const matchKeys = JENJANG_CONFIG[jKey].matchKeys;
                   return baseSekolahList.some((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
@@ -1141,9 +1159,9 @@ export const KabupatenDetail = () => {
           </div>
 
           {/* Panel Kanan — FILTER LENGKAP & List sekolah */}
-          <div className="flex flex-col gap-3 min-h-0 h-[560px]">
+          <div className="flex flex-col gap-3 min-h-0 h-[480px] sm:h-[540px] lg:h-full">
 
-            <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-slate-200/80 shrink-0 space-y-2.5">
+            <div className="bg-white rounded-2xl sm:rounded-[1.5rem] p-3.5 sm:p-4 shadow-sm border border-slate-200/80 shrink-0 space-y-2.5">
 
               <div className="flex items-center justify-between border-l-4 pl-3 border-blue-600">
                 <div>
@@ -1251,9 +1269,9 @@ export const KabupatenDetail = () => {
                   {schoolSearch && (
                     <button
                       onClick={() => setSchoolSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -1422,21 +1440,21 @@ export const KabupatenDetail = () => {
       </div>
 
       {/* ══ SECTION 4: DISTRIBUSI PER KECAMATAN ════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-8">
-        <div className="mb-4">
-          <h2 className="text-base font-extrabold text-slate-900">Distribusi Satuan Pendidikan per Kecamatan</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-6 sm:mt-8">
+        <div className="mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-extrabold text-slate-900">Distribusi Satuan Pendidikan per Kecamatan</h2>
           <p className="text-xs text-slate-500 font-medium">Sebaran sekolah dan lembaga pendidikan di seluruh wilayah kecamatan {info.nama}</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {kecamatanDistribusi.map((kec) => {
             const barWidth = Math.round((kec.total / maxKecamatanTotal) * 100);
             return (
               <div
                 key={kec.key}
-                className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
                   <div
                     className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
                     style={{ background: kec.color }}
@@ -1446,7 +1464,7 @@ export const KabupatenDetail = () => {
                     <p className="text-[10px] text-slate-400 font-medium">{info.nama}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-lg font-black text-slate-900">{kec.total.toLocaleString("id-ID")}</p>
+                    <p className="text-base sm:text-lg font-black text-slate-900">{kec.total.toLocaleString("id-ID")}</p>
                     <p className="text-[9px] text-slate-400 font-medium">satuan pend.</p>
                   </div>
                 </div>
@@ -1491,7 +1509,7 @@ export const KabupatenDetail = () => {
           })}
 
           {loadingData && Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs animate-pulse">
+            <div key={i} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs animate-pulse">
               <div className="h-4 bg-slate-200 rounded w-3/4 mb-3" />
               <div className="h-3 bg-slate-100 rounded w-1/2 mb-4" />
               <div className="h-1.5 bg-slate-200 rounded mb-3" />
@@ -1506,7 +1524,7 @@ export const KabupatenDetail = () => {
       </div>
 
       {/* ══ SECTION 5: DATA UMUM SATUAN PENDIDIKAN ══════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mt-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 sm:mt-10">
         <GeneralDataSection
           data={generalData}
           title={`Data Dapodik ${info.nama}`}
@@ -1516,7 +1534,7 @@ export const KabupatenDetail = () => {
       </div>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-6 sm:px-8 py-8 mt-8 border-t border-slate-200">
+      <footer className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-8 mt-8 border-t border-slate-200">
         <p className="text-xs text-slate-400 text-center">
           &copy; 2026 BLPT - Dinas Pendidikan Provinsi Sulawesi Tengah
         </p>

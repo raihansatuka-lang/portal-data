@@ -93,7 +93,7 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
       {/* ═══════════════════════════════════════════════════════════════════
           AREA HERO: Peta Sulawesi Tengah + Header + Panel + Cabdis Legend
       ════════════════════════════════════════════════════════════════════ */}
-      <div className="relative w-full h-[620px] sm:h-[680px] lg:h-[720px] xl:h-[750px] overflow-hidden">
+      <div className="relative w-full h-[420px] sm:h-[540px] lg:h-[720px] xl:h-[750px] overflow-hidden">
 
         {/* LAYER 1 — Peta Sulawesi Tengah Imersif Full-Screen dengan Two-Way Sync */}
         <div className="absolute inset-0 z-10">
@@ -113,13 +113,13 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
           LAYER 2 — Header Bersih, Ramping & Transparan (Sesuai Arahan Pengguna)
       ════════════════════════════════════════════════════════════════════ */}
       <header className="absolute top-0 inset-x-0 z-40 bg-white/60 backdrop-blur-md border-b border-white/60 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 h-14 flex items-center justify-between relative">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between relative">
 
           {/* Navigasi Kiri: Beranda, Dropdown Cabang Dinas, dan Data Provinsi */}
-          <nav className="flex items-center gap-2 z-10">
+          <nav className="flex items-center gap-1.5 sm:gap-2 z-10">
             <Link
               to="/"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-white/90 border border-slate-200/80 shadow-2xs hover:bg-white hover:border-blue-300 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-white/90 border border-slate-200/80 shadow-2xs hover:bg-white hover:border-blue-300 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
             >
               Beranda
             </Link>
@@ -128,13 +128,14 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
             <div className="relative" ref={cabdisRef}>
               <button
                 onClick={() => setCabdisOpen(!cabdisOpen)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 ${
                   cabdisOpen
                     ? "bg-white text-blue-700 shadow-xs border border-blue-200"
                     : "text-slate-700 bg-white/70 hover:bg-white hover:text-blue-700 hover:shadow-xs border border-transparent hover:border-slate-200/80"
                 }`}
               >
-                <span>Cabang Dinas</span>
+                <span className="hidden sm:inline">Cabang Dinas</span>
+                <span className="sm:hidden">Cabdis</span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     cabdisOpen ? "rotate-180 text-blue-600" : "text-slate-400"
@@ -177,14 +178,14 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
 
             <Link
               to="/provinsi"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/70 hover:bg-white hover:text-blue-700 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 border border-transparent hover:border-slate-200/80 transition-all duration-200"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/70 hover:bg-white hover:text-blue-700 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 border border-transparent hover:border-slate-200/80 transition-all duration-200"
             >
               Data Provinsi
             </Link>
           </nav>
 
-          {/* Logo Brand Resmi di Tengah (Dead-Center, Tanpa Teks Tambahan) */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
+          {/* Logo Brand Resmi di Tengah (Dead-Center, Hidden on Mobile) */}
+          <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center justify-center pointer-events-auto">
             <Link to="/" title="Berani Cerdas - Dinas Pendidikan Provinsi Sulawesi Tengah">
               <img
                 src="/logo.png"
@@ -197,12 +198,12 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
             </Link>
           </div>
 
-          {/* Sisi Kanan: Kontrol Panel & Info Kewenangan (Tanpa Tombol Login & Tanpa Badge Mencolok) */}
-          <div className="flex items-center gap-2 z-10">
+          {/* Sisi Kanan: Kontrol Panel & Info Kewenangan */}
+          <div className="flex items-center gap-1.5 sm:gap-2 z-10">
             {/* Tombol Panduan Kewenangan Data */}
             <button
               onClick={() => setInfoModalOpen(true)}
-              className="group flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50/90 hover:bg-blue-100/90 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 px-3 py-1.5 rounded-xl border border-blue-200/80 transition-all duration-200 shadow-2xs cursor-pointer"
+              className="group flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50/90 hover:bg-blue-100/90 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl border border-blue-200/80 transition-all duration-200 shadow-2xs cursor-pointer"
               title="Panduan Pembagian Data Sekolah (UU No. 23/2014)"
             >
               <Info className="w-3.5 h-3.5 text-blue-600 transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
@@ -211,7 +212,7 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
 
             <button
               onClick={handleToggleAllPanels}
-              className="group flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white/85 hover:bg-white hover:shadow-xs hover:-translate-y-0.5 active:scale-95 px-3 py-1.5 rounded-xl border border-slate-200/80 transition-all duration-200 shadow-2xs cursor-pointer"
+              className="group flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white/85 hover:bg-white hover:shadow-xs hover:-translate-y-0.5 active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 transition-all duration-200 shadow-2xs cursor-pointer"
               title="Sembunyikan / Tampilkan Panel"
             >
               {leftCollapsed && rightCollapsed ? (
@@ -368,9 +369,9 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
       <div className="relative z-30 w-full flex flex-col bg-slate-50/70 border-t border-slate-200/60 pt-6">
 
         {/* Mobile cards & Mobile cabdis legend */}
-        <div className="lg:hidden flex flex-col gap-5 px-6 pb-6">
+        <div className="lg:hidden flex flex-col gap-4 sm:gap-5 px-3.5 sm:px-6 pb-6">
           <div className="w-full flex justify-center pb-1">
-            <div className="inline-flex flex-col items-center gap-2.5 px-5 py-3.5 rounded-2xl bg-white/95 border border-slate-200/80 shadow-xs w-full">
+            <div className="inline-flex flex-col items-center gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl bg-white/95 border border-slate-200/80 shadow-xs w-full">
               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 text-center">
                 Peta Wilayah Cabang Dinas — Klik untuk Kunjungi
               </span>
@@ -392,7 +393,7 @@ export const PortalHeroSectionV2: React.FC<Props> = ({
         </div>
 
         {/* ── Matriks Data Umum Satuan Pendidikan Asli ── */}
-        <div className="max-w-7xl mx-auto w-full px-6 pb-8">
+        <div className="max-w-7xl mx-auto w-full px-3.5 sm:px-6 pb-8">
           <GeneralDataSection data={portalData?.summary} />
         </div>
 

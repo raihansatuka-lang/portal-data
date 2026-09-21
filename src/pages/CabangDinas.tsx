@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, Navigate, useNavigate, useLocation, Link } from "react-router-dom";
 import { CABANG_DATA } from "@/types";
 import type { CabangDinasItem } from "@/types";
-import { School as SchoolIcon, Search, MapPin, ArrowRight, ChevronLeft, ChevronDown, X, Eye, Plus, Minus, RotateCcw, Award } from "lucide-react";
+import { School as SchoolIcon, Search, MapPin, ArrowRight, ChevronLeft, ChevronDown, X, Eye, Plus, Minus, RotateCcw, Award, Map as MapIcon, ListFilter, BarChart3 } from "lucide-react";
 import L from "leaflet";
 import { PemetaanService } from "@/services/pemetaanService";
 import { SulawesiMap, CABDIS_CONFIG } from "@/components/Fragments/SulawesiMap";
@@ -105,6 +105,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
   const [activeKabupatenFilter, setActiveKabupatenFilter] = useState<string | null>(null);
   const [activeAkreditasiFilter, setActiveAkreditasiFilter] = useState<string | null>(null);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"map" | "list" | "profile">("map");
   const cabdisDropdownRef = useRef<HTMLDivElement>(null);
 
   const rawSchools = Array.isArray(data?.schools) ? data.schools : [];
@@ -247,7 +248,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
   }
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden font-poppins bg-slate-50/20 select-none">
+    <div className="relative w-full h-screen overflow-hidden font-poppins bg-slate-50/20 select-none">
 
       {/* Background */}
       <img
@@ -263,13 +264,13 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
             HEADER RESMI CABANG DINAS (STEP 1)
         ════════════════════════════════════════════════════════════════════ */}
         <header className="absolute top-0 inset-x-0 z-40 bg-white/70 backdrop-blur-md border-b border-white/70 shadow-2xs">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between relative">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between relative">
 
             {/* Sisi Kiri: Tombol Kembali ke Beranda & Identitas Wilayah */}
-            <div className="flex items-center gap-2.5 z-10">
+            <div className="flex items-center gap-2 sm:gap-2.5 z-10">
               <button
                 onClick={() => navigate("/")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/90 border border-slate-200/80 shadow-2xs hover:bg-white hover:border-slate-300 hover:text-blue-700 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/90 border border-slate-200/80 shadow-2xs hover:bg-white hover:border-slate-300 hover:text-blue-700 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
                 title="Kembali ke Beranda Utama"
               >
                 <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
@@ -279,7 +280,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
               <div className="h-4 w-px bg-slate-200 hidden sm:block" />
 
               {/* Badge Identitas Cabang Dinas Aktif */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-slate-200/70 shadow-2xs">
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/80 border border-slate-200/70 shadow-2xs">
                 <span
                   className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs ring-2 ring-offset-1"
                   style={{ background: activeCabdisCfg.color }}
@@ -294,7 +295,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
             </div>
 
             {/* Logo Brand Resmi di Tengah (Proporsional & Sleek) */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto">
+            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center justify-center pointer-events-auto">
               <Link to="/" title="Berani Cerdas - Dinas Pendidikan Provinsi Sulawesi Tengah">
                 <img
                   src="/logo.png"
@@ -310,13 +311,14 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
               <div className="relative" ref={cabdisDropdownRef}>
                 <button
                   onClick={() => setCabdisDropdownOpen(!cabdisDropdownOpen)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 ${cabdisDropdownOpen
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:scale-95 ${cabdisDropdownOpen
                       ? "bg-white text-blue-700 shadow-xs border border-blue-200"
                       : "text-slate-700 bg-white/85 hover:bg-white hover:text-blue-700 border border-slate-200/80 shadow-2xs"
                     }`}
                   title="Pindah ke Wilayah Cabang Dinas Lain"
                 >
-                  <span>Pindah Wilayah</span>
+                  <span className="hidden sm:inline">Pindah Wilayah</span>
+                  <span className="sm:hidden">Wilayah</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${cabdisDropdownOpen ? "rotate-180 text-blue-600" : "text-slate-400"
                       }`}
@@ -368,7 +370,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
 
               <Link
                 to="/provinsi"
-                className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/85 hover:bg-white hover:text-blue-700 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 border border-slate-200/80 shadow-2xs transition-all duration-200 hidden sm:inline-flex"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white/85 hover:bg-white hover:text-blue-700 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 border border-slate-200/80 shadow-2xs transition-all duration-200 hidden sm:inline-flex"
               >
                 Data Provinsi
               </Link>
@@ -376,6 +378,45 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
 
           </div>
         </header>
+
+        {/* Mobile Tab Pill Switcher (Map, List, Profile) */}
+        <div className="lg:hidden fixed top-16 inset-x-0 z-30 pointer-events-none flex justify-center px-4 py-1.5">
+          <div className="pointer-events-auto flex items-center p-1 bg-white/95 backdrop-blur-md rounded-2xl shadow-md border border-slate-200/90 gap-1">
+            <button
+              onClick={() => setMobileTab("map")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                mobileTab === "map"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              <span>Peta</span>
+            </button>
+            <button
+              onClick={() => setMobileTab("list")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                mobileTab === "list"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <ListFilter className="w-3.5 h-3.5" />
+              <span>Daftar ({filteredSchools.length})</span>
+            </button>
+            <button
+              onClick={() => setMobileTab("profile")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                mobileTab === "profile"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Profil</span>
+            </button>
+          </div>
+        </div>
 
         {/* Peta Interaktif */}
         <div className="absolute inset-0 z-5 overflow-hidden">
@@ -402,10 +443,12 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
         </div>
 
         {/* Layout: Panel Kiri (Profil Cabdis) + Area Peta Tengah + Panel Kanan (Daftar Sekolah) */}
-        <div className="relative z-10 w-full h-full flex flex-col lg:flex-row pt-16 pb-4 px-4 lg:px-6 gap-4 pointer-events-none">
+        <div className="relative z-10 w-full h-full flex flex-col lg:flex-row pt-28 lg:pt-16 pb-4 px-3 sm:px-4 lg:px-6 gap-3 lg:gap-4 pointer-events-none">
 
           {/* Sisi Kiri: Panel Profil & Quick Filter Jenjang & Sebaran Wilayah */}
-          <div className={`pointer-events-auto hidden lg:block transition-all duration-300 ${leftCollapsed ? "w-auto" : "w-[300px] xl:w-[325px]"} h-[calc(100vh-5rem)] shrink-0`}>
+          <div className={`pointer-events-auto transition-all duration-300 ${leftCollapsed ? "w-auto" : "w-full lg:w-[300px] xl:w-[325px]"} h-[calc(100vh-8rem)] lg:h-[calc(100vh-5rem)] shrink-0 ${
+            mobileTab === "profile" ? "block" : "hidden lg:block"
+          }`}>
             <CabdisProfileCard
               numericId={numericId}
               cabdisConfig={activeCabdisCfg}
@@ -423,7 +466,30 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
           </div>
 
           {/* Tengah: Area Peta Interaktif & Floating Navigation HUD */}
-          <div className="flex-1 pointer-events-none flex flex-col justify-end items-start pb-6">
+          <div className={`flex-1 pointer-events-none flex flex-col justify-end items-start pb-4 lg:pb-6 ${
+            mobileTab === "map" ? "flex" : "hidden lg:flex"
+          }`}>
+            {/* Mobile Bottom Quick Status Bar (Only on mobile in map mode) */}
+            <div className="lg:hidden pointer-events-auto w-full mb-3 px-1">
+              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-slate-200/90 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-black text-slate-800 truncate">
+                    {activeCabdisCfg.label}
+                  </p>
+                  <p className="text-[10.5px] text-slate-500 font-semibold">
+                    <span className="text-blue-600 font-extrabold">{filteredSchools.length}</span> Sekolah Terdaftar
+                  </p>
+                </div>
+                <button
+                  onClick={() => setMobileTab("list")}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                >
+                  <ListFilter className="w-3.5 h-3.5" />
+                  <span>Lihat Daftar</span>
+                </button>
+              </div>
+            </div>
+
             <div className="pointer-events-auto flex flex-col gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl shadow-lg border border-slate-200/90 transition-all duration-200">
               <button
                 type="button"
@@ -480,7 +546,9 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
           </div>
 
           {/* Sisi Kanan: Panel Daftar Sekolah */}
-          <div className="w-full lg:w-[320px] xl:w-[350px] pointer-events-auto flex flex-col gap-2.5 h-[calc(100vh-5rem)] min-h-0 shrink-0">
+          <div className={`w-full lg:w-[320px] xl:w-[350px] pointer-events-auto flex flex-col gap-2.5 h-[calc(100vh-8rem)] lg:h-[calc(100vh-5rem)] min-h-0 shrink-0 ${
+            mobileTab === "list" ? "flex" : "hidden lg:flex"
+          }`}>
 
             {/* Panel Header Seragam Kabupaten & Provinsi */}
             <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-sm rounded-2xl p-3.5 shrink-0">
@@ -583,6 +651,9 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
                     onClick={() => {
                       if (hasCoordinates) {
                         setSelectedSchoolForMap(school);
+                        if (window.innerWidth < 1024) {
+                          setMobileTab("map");
+                        }
                       }
                     }}
                     className={`bg-white rounded-2xl p-3.5 border shadow-2xs cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 shrink-0 ${isActive
@@ -641,6 +712,9 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
                           e.stopPropagation();
                           if (hasCoordinates) {
                             setSelectedSchoolForMap(school);
+                            if (window.innerWidth < 1024) {
+                              setMobileTab("map");
+                            }
                           }
                         }}
                         disabled={!hasCoordinates}
@@ -670,7 +744,7 @@ export const CabangDinas = ({ slug: propSlug }: { slug?: string }) => {
         </div>
 
         {/* Sleek Minimal GIS Footer Pill (Non-intrusive) */}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/70 shadow-2xs text-[10px] text-slate-500 font-semibold">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/70 shadow-2xs text-[10px] text-slate-500 font-semibold">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>&copy; 2026 BLPT - Dinas Pendidikan Provinsi Sulawesi Tengah</span>
         </div>

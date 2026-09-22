@@ -75,23 +75,28 @@ const getRegionLogo = (kabupaten: string) => {
 };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
-const createKabupatenIcon = (color: string, isActive = false) =>
-  L.divIcon({
+const createKabupatenIcon = (color: string, isActive = false, isMobile = false) => {
+  const dotSize = isMobile ? 11 : 16;
+  const pingSize = isMobile ? 22 : 30;
+  const borderWidth = isMobile ? 2 : 2.5;
+
+  return L.divIcon({
     className: "",
     html: `<div style="position:relative;display:flex;align-items:center;justify-content:center;">
-      ${isActive ? `<div style="position:absolute;width:34px;height:34px;border-radius:50%;background:${color}33;animation:ping 1.4s cubic-bezier(0,0,.2,1) infinite;"></div>` : ""}
-      <div style="width:18px;height:18px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 10px ${color}99;position:relative;z-index:2;"></div>
+      ${isActive ? `<div style="position:absolute;width:${pingSize}px;height:${pingSize}px;border-radius:50%;background:${color}35;animation:ping 1.3s cubic-bezier(0,0,.2,1) infinite;"></div>` : ""}
+      <div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${color};border:${borderWidth}px solid white;box-shadow:0 1.5px 7px ${color}88;position:relative;z-index:2;transition:all 0.2s;"></div>
     </div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -14],
+    iconSize: [dotSize, dotSize],
+    iconAnchor: [dotSize / 2, dotSize / 2],
+    popupAnchor: [0, -dotSize / 2 - 4],
   });
+};
 
 const ICON_CACHE: Record<string, L.DivIcon> = {};
-const getKabupatenIcon = (color: string, isActive: boolean) => {
-  const key = `${color}-${isActive}`;
+const getKabupatenIcon = (color: string, isActive: boolean, isMobile: boolean) => {
+  const key = `${color}-${isActive}-${isMobile}`;
   if (!ICON_CACHE[key]) {
-    ICON_CACHE[key] = createKabupatenIcon(color, isActive);
+    ICON_CACHE[key] = createKabupatenIcon(color, isActive, isMobile);
   }
   return ICON_CACHE[key];
 };
@@ -173,25 +178,34 @@ const ChangeMapView = ({ center, zoom }: { center: [number, number]; zoom: numbe
 const PanToActiveKabupaten = ({
   activeKode,
   defaultCenter,
+  isMobile,
 }: {
   activeKode: string | null;
   defaultCenter: [number, number];
+  isMobile: boolean;
 }) => {
   const map = useMap();
   useEffect(() => {
     if (activeKode && KABUPATEN_CENTROIDS[activeKode]) {
       const centroid = KABUPATEN_CENTROIDS[activeKode];
-      map.flyTo([centroid.lat, centroid.lng], map.getZoom(), {
-        duration: 0.5,
+      // Pada mobile, gunakan project/unproject untuk menggeser tepat 80px ke bawah layar
+      // agar marker dan popup memiliki ruang lega di bawah header navbar transparan (tinggi 56px)
+      const zoom = map.getZoom();
+      const targetPoint = map.project([centroid.lat, centroid.lng], zoom);
+      const offsetPoint = isMobile ? targetPoint.subtract([0, 80]) : targetPoint;
+      const targetLatLng = map.unproject(offsetPoint, zoom);
+
+      map.flyTo(targetLatLng, zoom, {
+        duration: 0.45,
         easeLinearity: 0.25,
       });
     } else if (activeKode === null) {
       map.flyTo(defaultCenter, map.getZoom(), {
-        duration: 0.5,
+        duration: 0.45,
         easeLinearity: 0.25,
       });
     }
-  }, [activeKode, defaultCenter, map]);
+  }, [activeKode, defaultCenter, isMobile, map]);
   return null;
 };
 
@@ -285,6 +299,17 @@ export const SulawesiMap: React.FC<MapProps> = ({
 
   const activeKode  = externalActiveKode  !== undefined ? externalActiveKode  : internalActiveKode;
   const hoveredKode = externalHoveredKode !== undefined ? externalHoveredKode : internalHoveredKode;
+
+  // Deteksi layar mobile untuk optimasi ukuran marker dan popup
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth < 1024 : false));
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     // 1. Peta Sulawesi Tengah per kabupaten — hanya untuk dashboard utama
@@ -413,7 +438,7 @@ export const SulawesiMap: React.FC<MapProps> = ({
       >
         <MapReadyHandler onMapReady={onMapReady} />
         <ChangeMapView center={mapCenter} zoom={mapZoom} />
-        {!onlyShowId && <PanToActiveKabupaten activeKode={activeKode} defaultCenter={mapCenter} />}
+        {!onlyShowId && <PanToActiveKabupaten activeKode={activeKode} defaultCenter={mapCenter} isMobile={isMobile} />}
 
         {/* ── BASE: Peta Indonesia abu-abu ── */}
         {layer === "base" && (
@@ -460,7 +485,7 @@ export const SulawesiMap: React.FC<MapProps> = ({
                 <Marker
                   key={`kab-${kode}`}
                   position={centroid as L.LatLngExpression}
-                  icon={getKabupatenIcon(color, isActive || isHovered)}
+                  icon={getKabupatenIcon(color, isActive || isHovered, isMobile)}
                   zIndexOffset={isActive || isHovered ? 1000 : 0}
                   eventHandlers={{
                     click: () => handleSelect(kode),
@@ -469,12 +494,12 @@ export const SulawesiMap: React.FC<MapProps> = ({
                   {/* Tooltip hover */}
                   <Tooltip
                     direction="top"
-                    offset={[0, -14]}
+                    offset={[0, -10]}
                     opacity={1}
                     permanent={false}
                     className="kab-tooltip"
                   >
-                    <span className="font-bold text-[11px] text-slate-800 whitespace-nowrap">
+                    <span className="font-bold text-[10px] text-slate-800 whitespace-nowrap">
                       {centroid.nama}
                     </span>
                   </Tooltip>
@@ -482,23 +507,26 @@ export const SulawesiMap: React.FC<MapProps> = ({
               );
             })}
 
-            {/* ━━━ POPUP DETAIL kabupaten ━━━ */}
+            {/* ━━━ POPUP DETAIL kabupaten (Sleek & Compact) ━━━ */}
             {!onlyShowId && activeKode && activeKabData && (
               <Popup
-                key={`popup-${activeKode}`}
+                key={`popup-${activeKode}-${isMobile ? "m" : "d"}`}
                 position={activeKabData}
-                minWidth={230}
-                maxWidth={270}
+                minWidth={isMobile ? 180 : 225}
+                maxWidth={isMobile ? 220 : 255}
                 className="kab-popup"
                 closeButton={true}
+                autoPan={true}
+                autoPanPaddingTopLeft={L.point(16, isMobile ? 65 : 20) as any}
+                autoPanPaddingBottomRight={L.point(16, 16) as any}
                 eventHandlers={{
                   remove: handlePopupClose,
                 }}
               >
-                <div className="font-poppins flex flex-col gap-3 p-1 min-w-[220px]">
+                <div className="font-poppins flex flex-col gap-2 p-0.5 min-w-[180px]">
                   {/* Header */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 flex items-center justify-center shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-9 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 flex items-center justify-center shadow-2xs">
                       <img
                         src={getRegionLogo(activeKabData.nama)}
                         alt={activeKabData.nama}
@@ -508,45 +536,51 @@ export const SulawesiMap: React.FC<MapProps> = ({
                         }}
                       />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color: activeColor }}>
-                        Kabupaten / Kota
+                    <div className="min-w-0 flex-1 pr-4">
+                      <div
+                        className="text-[8.5px] font-black uppercase tracking-wider mb-0.5 truncate"
+                        style={{ color: activeColor }}
+                      >
+                        {CABDIS_CONFIG[activeKabData.slug]?.label ? `Wil. ${activeKabData.slug.replace("cabdis-", "")}` : "Kabupaten / Kota"}
                       </div>
-                      <div className="font-extrabold text-slate-900 text-xs leading-snug truncate">
+                      <div className="font-black text-slate-900 text-xs leading-tight truncate">
                         {activeKabData.nama}
                       </div>
-                      <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
-                        {CABDIS_CONFIG[activeKabData.slug]?.label ?? ""}
+                      <div className="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">
+                        Sulawesi Tengah
                       </div>
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Sekolah</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
+                  {/* Stats Grid 2-kolom ringkas & padat */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex flex-col px-2 py-1 rounded-lg bg-emerald-50/80 border border-emerald-100/90">
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-700">Total Sekolah</span>
+                      <span className="font-black text-slate-900 text-xs leading-tight">
                         {(activeStat?.total_sekolah ?? activeStat?.jumlah_sekolah ?? 0).toLocaleString("id-ID")}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-sky-50 border border-sky-100">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Negeri / Swasta</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
+
+                    <div className="flex flex-col px-2 py-1 rounded-lg bg-amber-50/80 border border-amber-100/90">
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700">Total Siswa</span>
+                      <span className="font-black text-slate-900 text-xs leading-tight">
+                        {(activeStat?.total_siswa ?? activeStat?.jumlah_siswa ?? 0).toLocaleString("id-ID")}
+                      </span>
+                    </div>
+
+                    <div className="col-span-2 flex items-center justify-between px-2 py-1 rounded-lg bg-sky-50/80 border border-sky-100/90">
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-sky-700">Negeri / Swasta</span>
+                      <span className="font-black text-slate-800 text-[11px]">
                         {(activeStat?.total_negeri ?? activeStat?.negeri ?? 0).toLocaleString("id-ID")}
                         <span className="text-slate-400 font-normal"> / </span>
                         {(activeStat?.total_swasta ?? activeStat?.swasta ?? 0).toLocaleString("id-ID")}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 border border-amber-100">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Siswa</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
-                        {(activeStat?.total_siswa ?? activeStat?.jumlah_siswa ?? 0).toLocaleString("id-ID")}
-                      </span>
-                    </div>
+
                     {(activeStat?.total_3t ?? 0) > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-rose-50 border border-rose-100">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Sekolah 3T</span>
-                        <span className="font-extrabold text-rose-600 text-sm">
+                      <div className="col-span-2 flex items-center justify-between px-2 py-1 rounded-lg bg-rose-50/80 border border-rose-100/90">
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-rose-700">Sekolah 3T</span>
+                        <span className="font-black text-rose-600 text-[11px]">
                           {activeStat!.total_3t!.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -556,11 +590,11 @@ export const SulawesiMap: React.FC<MapProps> = ({
                   {/* CTA */}
                   <button
                     onClick={() => navigateToKabupaten(activeKode)}
-                    className="w-full py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider shadow-md transition-all hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2"
-                    style={{ background: `linear-gradient(135deg, ${activeColor}, ${activeColor}cc)` }}
+                    className="w-full py-1.5 rounded-lg text-white text-[10.5px] font-black uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer mt-0.5"
+                    style={{ background: `linear-gradient(135deg, ${activeColor}, ${activeColor}dd)` }}
                   >
-                    Kunjungi Wilayah
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                    <span>Kunjungi Wilayah</span>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                     </svg>
                   </button>
@@ -666,22 +700,22 @@ export const SulawesiMap: React.FC<MapProps> = ({
         .kab-tooltip::before { display: none !important; }
         /* Popup kabupaten */
         .kab-popup .leaflet-popup-content-wrapper {
-          border-radius: 20px !important;
-          border: 1px solid rgba(0,0,0,.06) !important;
-          box-shadow: 0 16px 48px rgba(0,0,0,.15) !important;
+          border-radius: 16px !important;
+          border: 1px solid rgba(0,0,0,.08) !important;
+          box-shadow: 0 12px 36px rgba(0,0,0,.15) !important;
           padding: 0 !important;
         }
         .kab-popup .leaflet-popup-content {
-          margin: 14px !important;
+          margin: 10px 11px !important;
         }
         .kab-popup .leaflet-popup-tip-container { display: none !important; }
         .kab-popup .leaflet-popup-close-button {
-          top: 8px !important;
-          right: 8px !important;
-          width: 22px !important;
-          height: 22px !important;
-          font-size: 16px !important;
-          line-height: 22px !important;
+          top: 6px !important;
+          right: 6px !important;
+          width: 20px !important;
+          height: 20px !important;
+          font-size: 14px !important;
+          line-height: 20px !important;
           background: #f8fafc !important;
           border-radius: 50% !important;
           color: #94a3b8 !important;

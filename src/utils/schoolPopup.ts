@@ -247,14 +247,14 @@ export const createSchoolPopupHtml = (input: SchoolPopupInput): string => {
     : null;
 
   return `
-    <div style="font-family:'Poppins',system-ui,-apple-system,sans-serif;padding:14px 16px 12px;min-width:260px;max-width:315px;background:#ffffff;border-radius:18px;box-sizing:border-box;">
+    <div style="font-family:'Poppins',system-ui,-apple-system,sans-serif;padding:10px 12px 9px;min-width:210px;max-width:275px;background:#ffffff;border-radius:16px;box-sizing:border-box;">
       
-      <!-- Top Row: Jenjang, Status & Akreditasi Badge (diberikan padding-right:26px agar tidak tertutup tombol close X) -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-right:26px;">
-        <span style="background:${color.bg};color:${color.text};border:1px solid ${color.border};font-size:10px;font-weight:900;padding:2.5px 7.5px;border-radius:6px;text-transform:uppercase;letter-spacing:0.03em;line-height:1.2;white-space:nowrap;">
+      <!-- Top Row: Jenjang, Status & Akreditasi Badge -->
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;padding-right:22px;">
+        <span style="background:${color.bg};color:${color.text};border:1px solid ${color.border};font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:0.02em;line-height:1.2;white-space:nowrap;">
           ${s.jenjang}
         </span>
-        <span style="font-size:10px;font-weight:700;color:#64748b;white-space:nowrap;">
+        <span style="font-size:9.5px;font-weight:700;color:#64748b;white-space:nowrap;">
           ${s.status}
         </span>
         <div style="margin-left:auto;flex-shrink:0;">
@@ -263,35 +263,35 @@ export const createSchoolPopupHtml = (input: SchoolPopupInput): string => {
       </div>
 
       <!-- School Name -->
-      <h3 style="font-size:13px;font-weight:900;color:#0f172a;line-height:1.35;margin:0 0 5px 0;word-break:break-word;">
+      <h3 style="font-size:12px;font-weight:900;color:#0f172a;line-height:1.3;margin:0 0 4px 0;word-break:break-word;">
         ${s.nama}
       </h3>
 
       <!-- Location -->
       ${s.location ? `
-        <p style="font-size:10.5px;color:#64748b;margin:0 0 11px 0;line-height:1.4;display:flex;align-items:flex-start;gap:4.5px;">
+        <p style="font-size:9.5px;color:#64748b;margin:0 0 8px 0;line-height:1.35;display:flex;align-items:flex-start;gap:3.5px;">
           <span style="overflow:hidden;text-overflow:ellipsis;">${s.location}</span>
         </p>
       ` : ''}
 
       <!-- Footer: NPSN Chip, Rute & Detail Button -->
-      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:9px;margin-top:3px;">
-        <span style="font-size:9.5px;font-weight:700;color:#64748b;font-family:monospace;background:#f8fafc;padding:2px 6.5px;border-radius:5px;border:1px solid #e2e8f0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:7px;margin-top:2px;">
+        <span style="font-size:9px;font-weight:700;color:#64748b;font-family:monospace;background:#f8fafc;padding:1.5px 5.5px;border-radius:5px;border:1px solid #e2e8f0;">
           NPSN: ${s.npsn || '—'}
         </span>
         
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
           ${gmapsUrl ? `
-            <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" style="font-size:10px;font-weight:700;color:#64748b;text-decoration:none;display:inline-flex;align-items:center;gap:2.5px;padding:3px 6px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#2563eb';" onmouseout="this.style.color='#64748b';" title="Buka Petunjuk Arah di Google Maps">
+            <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" style="font-size:9.5px;font-weight:700;color:#64748b;text-decoration:none;display:inline-flex;align-items:center;gap:2px;padding:2.5px 5px;border-radius:5px;transition:all 0.15s;" onmouseover="this.style.color='#2563eb';" onmouseout="this.style.color='#64748b';" title="Buka Petunjuk Arah di Google Maps">
               <span>Rute</span>
-              <span style="font-size:9px;color:#94a3b8;">↗</span>
+              <span style="font-size:8.5px;color:#94a3b8;">↗</span>
             </a>
           ` : ''}
 
           ${s.npsn ? `
-            <a href="/sekolah/${s.npsn}" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;color:#2563eb;text-decoration:none;background:#eff6ff;padding:3.5px 10px;border-radius:8px;border:1px solid #bfdbfe;transition:all 0.2s;" onmouseover="this.style.background='#2563eb';this.style.color='#ffffff';" onmouseout="this.style.background='#eff6ff';this.style.color='#2563eb';">
+            <a href="/sekolah/${s.npsn}" style="display:inline-flex;align-items:center;gap:2.5px;font-size:10px;font-weight:800;color:#2563eb;text-decoration:none;background:#eff6ff;padding:2.5px 8px;border-radius:6px;border:1px solid #bfdbfe;transition:all 0.2s;" onmouseover="this.style.background='#2563eb';this.style.color='#ffffff';" onmouseout="this.style.background='#eff6ff';this.style.color='#2563eb';">
               <span>Detail</span>
-              <span style="font-size:12px;font-weight:900;">→</span>
+              <span style="font-size:11px;font-weight:900;">→</span>
             </a>
           ` : ''}
         </div>

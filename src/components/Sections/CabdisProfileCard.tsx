@@ -319,8 +319,8 @@ export const CabdisProfileCard: React.FC<CabdisProfileCardProps> = ({
                           </span>
                         )}
                       </div>
-                      <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">
-                        {stat.negeri}N / {stat.swasta}S
+                      <p className="text-[9.5px] text-slate-400 font-semibold leading-none mt-0.5 whitespace-nowrap">
+                        {stat.negeri}N · {stat.swasta}S
                       </p>
                     </div>
                   </div>
@@ -341,7 +341,7 @@ export const CabdisProfileCard: React.FC<CabdisProfileCardProps> = ({
         {/* ── Donut Chart Proporsi Jenjang di Wilayah Ini ── */}
         <div className="flex items-center justify-center gap-3 p-2 rounded-2xl bg-white/90 border border-slate-100 shadow-2xs hover:shadow-xs transition-shadow">
           <div className="relative flex h-[96px] w-[96px] items-center justify-center shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={96}>
               <PieChart>
                 <Pie
                   data={chartData.length > 0 ? chartData : [{ name: "kosong", value: 1, color: "#e2e8f0" }]}

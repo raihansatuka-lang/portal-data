@@ -844,7 +844,7 @@ export const ProvinsiDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : ((Number(totalStats.map["SMA"]?.total ?? 0)) + (Number(totalStats.map["MA"]?.total ?? 0))).toLocaleString("id-ID")}
               </p>
-              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 SMA: {totalStats.map["SMA"]?.total ?? 0} · MA: {totalStats.map["MA"]?.total ?? 0}
               </p>
             </div>
@@ -867,7 +867,7 @@ export const ProvinsiDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : Number(totalStats.map["SMK"]?.total ?? 0).toLocaleString("id-ID")}
               </p>
-              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.map["SMK"]?.total_negeri ?? 0}N · {totalStats.map["SMK"]?.total_swasta ?? 0}S
               </p>
             </div>
@@ -890,14 +890,14 @@ export const ProvinsiDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : Number(totalStats.map["SLB"]?.total ?? 0).toLocaleString("id-ID")}
               </p>
-              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.map["SLB"]?.total_negeri ?? 0}N · {totalStats.map["SLB"]?.total_swasta ?? 0}S
               </p>
             </div>
           </div>
 
           {/* Card 5: Wilayah 3T / Terpencil */}
-          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-2xl p-3 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2 sm:mb-2.5">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-cyan-50 text-cyan-600 shadow-2xs">
                 <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
@@ -910,7 +910,7 @@ export const ProvinsiDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.total3t.toLocaleString("id-ID")}
               </p>
-              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[9.5px] sm:text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 Afirmasi Terdepan / Terluar
               </p>
             </div>
@@ -1134,8 +1134,8 @@ export const ProvinsiDetail = () => {
               </button>
             </div>
 
-            {/* Dynamic Legenda di Kiri Bawah (Collapsible di Mobile) */}
-            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-sm">
+            {/* Dynamic Legenda di Kiri Bawah (Collapsible di Mobile, di atas action bar) */}
+            <div className="absolute bottom-16 sm:bottom-4 left-3 sm:left-4 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-sm">
               {mapMode === "cabdis" ? (
                 <div>
                   {/* Tombol Toggle Legenda Mobile */}

@@ -183,8 +183,8 @@ export const ProyeksiCard: React.FC<ProyeksiCardProps> = ({
                   </div>
                   <div>
                     <p className="text-sm font-extrabold tracking-wide text-slate-800">{j.label}</p>
-                    <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">
-                      {negeri}N / {swasta}S
+                    <p className="text-[9.5px] text-slate-400 font-semibold leading-none mt-0.5 whitespace-nowrap">
+                      {negeri}N · {swasta}S
                     </p>
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export const ProyeksiCard: React.FC<ProyeksiCardProps> = ({
         {/* ── Donut Chart ── */}
         <div className="relative flex flex-col items-center justify-center shrink-0">
           <div className="relative flex h-[130px] w-[130px] items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={130}>
               <PieChart>
                 <Pie
                   data={

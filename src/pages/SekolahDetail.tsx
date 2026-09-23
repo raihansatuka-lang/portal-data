@@ -966,10 +966,10 @@ export const SekolahDetail = () => {
               </div>
             </div>
             <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100">
-              <div className="flex justify-between text-[9px] sm:text-[11px] font-bold text-slate-600 mb-1 truncate">
-                <span>PNS:{pnsCount}</span>
-                <span>PPPK:{pppkCount}</span>
-                <span>Hon:{honorerCount}</span>
+              <div className="flex justify-between items-center text-[9px] sm:text-[11px] font-bold text-slate-600 mb-1 whitespace-nowrap gap-1">
+                <span>PNS: {pnsCount}</span>
+                <span>PPPK: {pppkCount}</span>
+                <span>Hon: {honorerCount}</span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 sm:h-2 rounded-full overflow-hidden flex">
                 <div style={{ width: `${pnsPct}%` }} className="bg-blue-600 h-full" title={`PNS: ${pnsCount}`} />
@@ -1010,7 +1010,7 @@ export const SekolahDetail = () => {
                 <span className="text-[10px] sm:text-xs font-bold text-slate-400">Ruangan</span>
               </div>
             </div>
-            <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-xs text-slate-600 font-bold">
+            <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-xs text-slate-600 font-bold whitespace-nowrap gap-1">
               <span>{ruangKelasCount} Kelas</span>
               <span>•</span>
               <span>{labCount} Lab</span>
@@ -1434,7 +1434,7 @@ export const SekolahDetail = () => {
                     <GraduationCap className="w-4 h-4" />
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                    UPTD BLPT Disdik Prov Sulteng1
+                    UPTD BLPT Disdik Prov Sulteng
                   </span>
                 </div>
                 <h4 className="font-extrabold text-slate-900 text-sm mb-1 group-hover:text-amber-700 transition-colors">

@@ -226,8 +226,8 @@ export const ProyeksiCardV2: React.FC<ProyeksiCardV2Props> = ({
                     <p className={`text-xs font-black tracking-wide transition-colors duration-200 ${isHovered ? "text-purple-700" : "text-slate-800"}`}>
                       {j.label}
                     </p>
-                    <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">
-                      {negeri}N / {swasta}S
+                    <p className="text-[9.5px] text-slate-400 font-semibold leading-none mt-0.5 whitespace-nowrap">
+                      {negeri}N · {swasta}S
                     </p>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export const ProyeksiCardV2: React.FC<ProyeksiCardV2Props> = ({
         {/* ── Donut Chart Interaktif & Responsif terhadap Hover ── */}
         <div className="flex items-center justify-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-100/90 shadow-2xs hover:shadow-xs transition-shadow">
           <div className="relative flex h-[104px] w-[104px] items-center justify-center shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={100}>
               <PieChart>
                 <Pie
                   data={

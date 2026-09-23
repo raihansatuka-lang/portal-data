@@ -898,7 +898,7 @@ export const KabupatenDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.tk.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.tk.negeri}N · {totalStats.tk.swasta}S
               </p>
             </div>
@@ -921,7 +921,7 @@ export const KabupatenDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.sd.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.sd.negeri}N · {totalStats.sd.swasta}S
               </p>
             </div>
@@ -944,14 +944,14 @@ export const KabupatenDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.smp.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.smp.negeri}N · {totalStats.smp.swasta}S
               </p>
             </div>
           </div>
 
           {/* Card 5: SMA / MA */}
-          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div className="bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
@@ -967,7 +967,7 @@ export const KabupatenDetail = () => {
               <p className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
                 {loadingData ? "..." : totalStats.sma.total.toLocaleString("id-ID")}
               </p>
-              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5 whitespace-nowrap">
                 {totalStats.sma.negeri}N · {totalStats.sma.swasta}S
               </p>
             </div>
@@ -1148,8 +1148,8 @@ export const KabupatenDetail = () => {
               </button>
             </div>
 
-            {/* Legenda Dinamis di Peta (Termasuk PKBM & Kursus) */}
-            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-10 max-w-[calc(100%-24px)] sm:max-w-md">
+            {/* Legenda Dinamis di Peta (Termasuk PKBM & Kursus - Di atas action bar di mobile) */}
+            <div className="absolute bottom-16 sm:bottom-4 left-3 sm:left-4 z-10 max-w-[calc(100%-24px)] sm:max-w-md">
               <button
                 onClick={() => setShowLegendMobile(!showLegendMobile)}
                 className="sm:hidden flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] font-bold text-slate-700 mb-1.5 cursor-pointer"

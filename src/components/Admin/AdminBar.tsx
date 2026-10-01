@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { LogOut, ShieldCheck, ChevronDown, ChevronUp, Database } from "lucide-react";
 
 /**
  * AdminBar — floating status capsule di sudut kanan bawah.
@@ -66,6 +66,18 @@ export const AdminBar = () => {
               </span>
             )}
           </div>
+
+          <div className="w-px h-4 bg-slate-200 shrink-0" />
+
+          {/* Link ke Pusat Data /admin */}
+          <Link
+            to="/admin"
+            className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1 rounded-xl text-xs font-bold transition-all"
+            title="Buka Pusat Data Admin"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Pusat Data</span>
+          </Link>
 
           <div className="w-px h-4 bg-slate-200 shrink-0" />
 

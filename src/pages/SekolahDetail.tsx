@@ -613,6 +613,201 @@ export const SekolahDetail = () => {
     ...cleanedApi,
   };
 
+  // ── Data Rapor Pendidikan 2025 (Riil dari API) ─────────────────────────────
+  const rapor = data?.raporPendidikan ?? null;
+
+  const getCapaianStyle = (label?: string | null) => {
+    if (!label || label.includes("Tidak Tersedia")) {
+      return {
+        badge: label || "Belum Ada Data",
+        badgeBg: "bg-slate-100 text-slate-600 border-slate-200",
+        color: "slate",
+        keterangan: "Data belum tersedia",
+      };
+    }
+    const lower = label.toLowerCase();
+    if (lower.includes("sangat baik") || lower.includes("membudaya")) {
+      return {
+        badge: label,
+        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        color: "emerald",
+        keterangan: "Sangat baik & membudaya",
+      };
+    }
+    if (lower.includes("baik")) {
+      return {
+        badge: label,
+        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        color: "emerald",
+        keterangan: "Memenuhi standar capaian",
+      };
+    }
+    if (lower.includes("sedang") || lower.includes("cukup")) {
+      return {
+        badge: label,
+        badgeBg: "bg-amber-50 text-amber-700 border-amber-200",
+        color: "amber",
+        keterangan: "Perlu peningkatan bertahap",
+      };
+    }
+    if (lower.includes("kurang") || lower.includes("waspada")) {
+      return {
+        badge: label,
+        badgeBg: "bg-rose-50 text-rose-700 border-rose-200",
+        color: "rose",
+        keterangan: "Perlu bimbingan khusus",
+      };
+    }
+    return {
+      badge: label,
+      badgeBg: "bg-blue-50 text-blue-700 border-blue-200",
+      color: "blue",
+      keterangan: "Dalam pemantauan",
+    };
+  };
+
+  const formatPeringkatText = (peringkat?: string | null) => {
+    if (!peringkat || peringkat.includes("Tidak Tersedia")) return "—";
+    const p = peringkat.toLowerCase();
+    if (p.includes("1-20%")) return "20% Teratas";
+    if (p.includes("21-40%")) return "Menengah Atas (21-40%)";
+    if (p.includes("41-60%")) return "Menengah (41-60%)";
+    if (p.includes("61-80%")) return "Menengah Bawah (61-80%)";
+    if (p.includes("81-100%")) return "Kelompok Bawah (81-100%)";
+    return peringkat;
+  };
+
+  const formatDeltaInfo = (perubahan?: string | null, delta?: string | null) => {
+    if (!delta || delta === "0" || delta === "—" || delta.includes("Tidak")) return null;
+    const per = (perubahan || "").toLowerCase();
+    if (per.includes("naik")) {
+      return { text: `↑ +${delta}%`, color: "emerald" };
+    }
+    if (per.includes("turun")) {
+      return { text: `↓ -${delta}%`, color: "rose" };
+    }
+    if (per.includes("tetap")) {
+      return { text: `— Tetap`, color: "slate" };
+    }
+    return { text: delta, color: "slate" };
+  };
+
+  const getRaporSummary = () => {
+    if (!rapor) {
+      return {
+        title: "Data Rapor Belum Tercatat",
+        desc: `Satuan pendidikan ${school.nama} belum memiliki catatan hasil Asesmen Nasional 2025 di basis data resmi.`,
+        statusText: "BELUM TERDATA",
+        statusColor: "text-slate-500",
+      };
+    }
+    const lit = (rapor.literasi_label || "").toLowerCase();
+    const num = (rapor.numerasi_label || "").toLowerCase();
+    if (lit.includes("kurang") || num.includes("kurang")) {
+      return {
+        title: "Perlu Pendampingan Khusus pada Kemampuan Dasar Siswa",
+        desc: `${school.nama} memerlukan program pendampingan dan bimbingan belajar tambahan pada kemampuan literasi dan numerasi siswa.`,
+        statusText: "PERLU PENDAMPINGAN",
+        statusColor: "text-rose-600",
+      };
+    }
+    if (lit.includes("sedang") || num.includes("sedang")) {
+      return {
+        title: "Capaian Cukup Baik — Fokus pada Penguatan Bertahap",
+        desc: `${school.nama} menunjukkan capaian yang cukup baik, dengan beberapa aspek yang perlu terus ditingkatkan pada tahun pembelajaran berikutnya.`,
+        statusText: "PERLU PENINGKATAN",
+        statusColor: "text-amber-600",
+      };
+    }
+    return {
+      title: "Mutu Pembelajaran & Iklim Belajar Memenuhi Standar Baik",
+      desc: `${school.nama} menunjukkan hasil belajar yang baik dan iklim sekolah yang kondusif berdasarkan evaluasi Asesmen Nasional 2025.`,
+      statusText: "MEMENUHI STANDAR",
+      statusColor: "text-emerald-600",
+    };
+  };
+
+  const getDynamicPbdRecommendations = () => {
+    if (!rapor) {
+      return [
+        {
+          no: 1,
+          title: "Keikutsertaan Asesmen Nasional (ANBK)",
+          desc: "Pastikan seluruh siswa dan guru berpartisipasi aktif dalam Asesmen Nasional dan Sulingjar periode berikutnya agar data mutu sekolah terdata lengkap.",
+          fokus: "Partisipasi Asesmen",
+          color: "blue",
+        },
+      ];
+    }
+    const recs = [];
+    const num = (rapor.numerasi_label || "").toLowerCase();
+    const lit = (rapor.literasi_label || "").toLowerCase();
+    const kbm = (rapor.kualitas_kbm_label || "").toLowerCase();
+    const aman = (rapor.keamanan_label || "").toLowerCase();
+
+    if (num.includes("kurang") || num.includes("sedang")) {
+      recs.push({
+        no: recs.length + 1,
+        title: "Penguatan Kemampuan Berhitung (Numerasi) Siswa",
+        desc: "Sediakan jam bimbingan belajar tambahan dan perbanyak latihan soal matematika terapan kontekstual yang dekat dengan kehidupan sehari-hari murid.",
+        fokus: "Prioritas Numerasi",
+        color: "amber",
+      });
+    }
+
+    if (lit.includes("kurang") || lit.includes("sedang")) {
+      recs.push({
+        no: recs.length + 1,
+        title: "Pembiasaan Membaca & Pemanfaatan Sudut Buku",
+        desc: "Jadwalkan kegiatan membaca mandiri selama 15 menit sebelum jam belajar dan tambah variasi buku bacaan fiksi/nonfiksi yang menarik bagi siswa.",
+        fokus: "Prioritas Literasi",
+        color: "blue",
+      });
+    }
+
+    if (aman.includes("waspada") || aman.includes("kurang")) {
+      recs.push({
+        no: recs.length + 1,
+        title: "Pencegahan Perundungan & Pengawasan Lingkungan Sekolah",
+        desc: "Perkuat peran Tim Pencegahan dan Penanganan Kekerasan (TPPK) dan sediakan kotak saran/konsultasi guru BK yang mudah diakses siswa.",
+        fokus: "Iklim Keamanan",
+        color: "rose",
+      });
+    }
+
+    if (kbm.includes("kurang") || kbm.includes("sedang")) {
+      recs.push({
+        no: recs.length + 1,
+        title: "Peningkatan Metode Mengajar Interaktif di Kelas",
+        desc: "Dorong para pendidik untuk saling berbagi metode pengajaran aktif melalui Komunitas Belajar (Kombel) agar suasana kelas lebih komunikatif.",
+        fokus: "Kualitas Mengajar",
+        color: "indigo",
+      });
+    }
+
+    if (recs.length === 0) {
+      recs.push({
+        no: 1,
+        title: "Pertahankan Prestasi & Berbagi Pengalaman dengan Sekolah Lain",
+        desc: "Seluruh capaian utama sekolah sudah memenuhi kategori Baik. Sekolah dapat menjadi inspirasi dan berbagi metode belajar efektif kepada satuan pendidikan di sekitarnya.",
+        fokus: "Praktik Baik",
+        color: "emerald",
+      });
+      recs.push({
+        no: 2,
+        title: "Pengembangan Minat, Bakat, dan Karakter Murid",
+        desc: "Dukung kegiatan ekstrakurikuler serta proyek pembiasaan budi pekerti untuk menjaga lingkungan belajar yang inklusif dan berkarakter.",
+        fokus: "Karakter Siswa",
+        color: "blue",
+      });
+    }
+
+    return recs;
+  };
+
+  const raporSummary = getRaporSummary();
+  const dynamicRecs = getDynamicPbdRecommendations();
+
   // Parsing Jenjang & Warna
   const jenjang = String(school.bentuk_pendidikan || "SMA").toUpperCase().trim();
   const jenjangColor = getJenjangColor(jenjang);
@@ -1357,15 +1552,15 @@ export const SekolahDetail = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                 <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                  Program Akselerasi Digitalisasi Sekolah — Dinas Pendidikan Prov. Sulteng
+                  Fasilitas Digital & Akses Internet Sekolah
                 </h3>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Monitoring bantuan infrastruktur TIK, konektivitas internet sekolah, dan pemanfaatan platform pembelajaran digital.
+                Ketersediaan jaringan internet, sarana digital, dan platform pembelajaran sekolah.
               </p>
             </div>
             <span className="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              Terverifikasi DAK & Pusdatin
+              Terverifikasi Dapodik & BLPT
             </span>
           </div>
 
@@ -1537,44 +1732,108 @@ export const SekolahDetail = () => {
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                   <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                    Rapor Mutu Pendidikan SPMB (Asesmen Nasional)
+                    Rapor Pendidikan (Asesmen Nasional 2025)
                   </h3>
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  Evaluasi standar pelayanan minimum bidang pendidikan dan iklim pembelajaran.
+                  Evaluasi resmi capaian mutu belajar siswa dan iklim sekolah dari Kemendikbudristek.
                 </p>
               </div>
               <button
                 onClick={() => setIsRaporModalOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-200 border border-blue-200 shadow-2xs hover:shadow-sm hover:-translate-y-0.5 active:scale-95 cursor-pointer self-start sm:self-auto group"
               >
-                <span>Telaah Rapor Mutu Lengkap</span>
+                <span>Lihat Rapor Lengkap</span>
                 <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-150" />
               </button>
             </div>
 
-            {/* 6 Dimensi Rapor Mutu with Modern Micro-hover */}
+            {/* 6 Dimensi Rapor Mutu Riil */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
-                { label: "Literasi Siswa", val: "78.4", badge: "Baik", color: "emerald", desc: "Di atas rerata kabupaten & provinsi" },
-                { label: "Numerasi Siswa", val: "68.2", badge: "Sedang", color: "amber", desc: "Fokus penguatan modul ajar HOTS" },
-                { label: "Karakter Siswa", val: "75.0", badge: "Baik", color: "emerald", desc: "Profil Pelajar Pancasila aktif" },
-                { label: "Iklim Keamanan", val: "86.0", badge: "Sangat Baik", color: "emerald", desc: "Bebas perundungan & kondusif" },
-                { label: "Kebinekaan", val: "82.0", badge: "Membudaya", color: "emerald", desc: "Sikap toleransi sosial tinggi" },
-                { label: "Kualitas KBM", val: "74.0", badge: "Baik", color: "emerald", desc: "Instruksi terarah dan terstruktur" },
+                {
+                  label: "Kemampuan Literasi",
+                  badge: rapor?.literasi_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.literasi_label),
+                  delta: formatDeltaInfo(rapor?.literasi_perubahan, rapor?.literasi_delta),
+                  desc: rapor?.literasi_peringkat_prov
+                    ? `${formatPeringkatText(rapor.literasi_peringkat_prov)} di Prov. Sulteng`
+                    : "Kemampuan membaca & memahami teks",
+                },
+                {
+                  label: "Kemampuan Numerasi",
+                  badge: rapor?.numerasi_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.numerasi_label),
+                  delta: formatDeltaInfo(rapor?.numerasi_perubahan, rapor?.numerasi_delta),
+                  desc: rapor?.numerasi_peringkat_kab
+                    ? `${formatPeringkatText(rapor.numerasi_peringkat_kab)} di Kab/Kota`
+                    : "Kemampuan penalaran matematika",
+                },
+                {
+                  label: "Karakter Siswa",
+                  badge: rapor?.karakter_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.karakter_label),
+                  delta: formatDeltaInfo(rapor?.karakter_perubahan, rapor?.karakter_delta),
+                  desc: rapor?.karakter_peringkat_prov
+                    ? `${formatPeringkatText(rapor.karakter_peringkat_prov)} di Prov. Sulteng`
+                    : "Sikap & budi pekerti murid",
+                },
+                {
+                  label: "Iklim Keamanan",
+                  badge: rapor?.keamanan_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.keamanan_label),
+                  delta: formatDeltaInfo(rapor?.keamanan_perubahan, rapor?.keamanan_delta),
+                  desc: "Kondusif & bebas perundungan",
+                },
+                {
+                  label: "Iklim Kebinekaan",
+                  badge: rapor?.kebinekaan_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.kebinekaan_label),
+                  delta: formatDeltaInfo(rapor?.kebinekaan_perubahan, rapor?.kebinekaan_delta),
+                  desc: "Toleransi & kerukunan warga sekolah",
+                },
+                {
+                  label: "Kualitas Pembelajaran",
+                  badge: rapor?.kualitas_kbm_label ?? (rapor ? "Belum Ada" : "—"),
+                  style: getCapaianStyle(rapor?.kualitas_kbm_label),
+                  delta: formatDeltaInfo(rapor?.kualitas_kbm_perubahan, rapor?.kualitas_kbm_delta),
+                  desc: "Metode & interaksi belajar di kelas",
+                },
               ].map((dim, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 bg-slate-50/70 hover:bg-white rounded-xl border border-slate-200/70 hover:border-blue-300 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-150 cursor-default"
+                  className="p-3.5 bg-slate-50/70 hover:bg-white rounded-xl border border-slate-200/70 hover:border-blue-300 hover:shadow-xs hover:-translate-y-0.5 transition-all duration-150 cursor-default flex flex-col justify-between"
                 >
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[11px] font-bold text-slate-600">{dim.label}</span>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${dim.color === "emerald" ? "text-emerald-700 bg-emerald-50" : "text-amber-700 bg-amber-50"}`}>
-                      {dim.badge}
-                    </span>
+                  <div>
+                    <div className="flex justify-between items-start gap-1 mb-2">
+                      <span className="text-[11px] font-bold text-slate-700 leading-tight">
+                        {dim.label}
+                      </span>
+                      {dim.delta && (
+                        <span
+                          className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-full shrink-0 border ${
+                            dim.delta.color === "emerald"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : dim.delta.color === "rose"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : "bg-slate-100 text-slate-600 border-slate-200"
+                          }`}
+                        >
+                          {dim.delta.text}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mb-2">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-black tracking-wide border shadow-2xs ${dim.style.badgeBg}`}
+                      >
+                        {dim.badge}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-xl font-black text-slate-900">{dim.val} <span className="text-xs text-slate-400 font-normal">/100</span></div>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-tight">{dim.desc}</p>
+                  <p className="text-[10px] text-slate-500 mt-1 leading-snug line-clamp-2">
+                    {dim.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1590,11 +1849,11 @@ export const SekolahDetail = () => {
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                   <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                    Monitoring Siswa DO & ATS
+                    Status Siswa & Pencegahan Putus Sekolah
                   </h3>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Program Wajib Belajar 12 Tahun Bebas Putus Sekolah
+                  Pemantauan keaktifan belajar siswa dan penanganan anak rentan putus sekolah.
                 </p>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -1865,14 +2124,14 @@ export const SekolahDetail = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-slate-900" id="rapor-modal-title">
-                      Rapor Mutu Pendidikan — {school.nama}
+                      Rapor Pendidikan Tahun 2025 — {school.nama}
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Status: Tuntas / Kategori Baik
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${rapor ? (rapor.literasi_label === 'Kurang' || rapor.numerasi_label === 'Kurang' ? 'bg-rose-50 text-rose-700 border-rose-200' : rapor.numerasi_label === 'Sedang' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200') : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                      Status: {raporSummary.statusText}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 font-medium">
-                    Asesmen Nasional & Survei Lingkungan Belajar (Sulingjar) Periode Rilis Resmi
+                    Data Resmi Kemendikbudristek RI · Hasil Asesmen Nasional (AN) & Survei Lingkungan Belajar (Sulingjar)
                   </p>
                 </div>
               </div>
@@ -1889,31 +2148,35 @@ export const SekolahDetail = () => {
             {/* Modal Body */}
             <div className="overflow-y-auto p-6 space-y-6 flex-1 text-xs">
               {/* Ringkasan Banner */}
-              <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-emerald-50/60 rounded-xl p-4 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="bg-gradient-to-r from-blue-50/80 via-slate-50 to-emerald-50/60 rounded-xl p-4 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
-                    RINGKASAN STATUS KELAYAKAN SATUAN PENDIDIKAN
+                    RINGKASAN CAPAIAN MUTU SEKOLAH
                   </span>
                   <h4 className="text-base font-extrabold text-slate-900">
-                    Capaian Mutu Pembelajaran Unggul & Kondusif
+                    {raporSummary.title}
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    {school.nama} berada di atas rerata capaian satuan pendidikan setara tingkat {wilayahLabel} dan Provinsi Sulawesi Tengah.
+                    {raporSummary.desc}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200/60">
+                <div className="flex items-center gap-3 shrink-0 bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-slate-200/60">
                   <div className="text-center px-2">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">
-                      STANDAR NASIONAL
+                      STATUS CAPAIAN
                     </span>
-                    <span className="text-lg font-black text-emerald-600">TERPENUHI</span>
+                    <span className={`text-base font-black ${raporSummary.statusColor}`}>
+                      {raporSummary.statusText}
+                    </span>
                   </div>
                   <div className="h-8 w-px bg-slate-200" />
                   <div className="text-center px-2">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">
-                      STATUS IKLIM
+                      IKLIM SEKOLAH
                     </span>
-                    <span className="text-lg font-black text-indigo-600">KONDUSIF</span>
+                    <span className="text-base font-black text-indigo-600">
+                      {rapor?.keamanan_label ? (rapor.keamanan_label.toLowerCase().includes("baik") ? "KONDUSIF" : rapor.keamanan_label.toUpperCase()) : "KONDUSIF"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1923,88 +2186,103 @@ export const SekolahDetail = () => {
                 <div className="flex items-center justify-between mb-3">
                   <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                     <span className="w-1.5 h-4 rounded-full bg-blue-600" />
-                    Hasil Asesmen Nasional (AN) Lengkap
+                    Hasil Asesmen Nasional (AN) Murid
                   </h5>
                   <span className="text-[11px] text-slate-400">Target Asesmen: Siswa {isMenengah ? "Kelas XI" : "Tingkat Akhir"}</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Literasi */}
-                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-800">Kemampuan Literasi</span>
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        ↑ +3.8%
-                      </span>
+                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800">Kemampuan Literasi</span>
+                        {formatDeltaInfo(rapor?.literasi_perubahan, rapor?.literasi_delta) && (
+                          <span className={`border text-[10px] font-semibold px-2 py-0.5 rounded-full ${formatDeltaInfo(rapor?.literasi_perubahan, rapor?.literasi_delta)?.color === 'rose' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                            {formatDeltaInfo(rapor?.literasi_perubahan, rapor?.literasi_delta)?.text}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mb-2">
+                        <span className={`inline-block px-3 py-1 rounded-lg text-sm font-black border shadow-2xs ${getCapaianStyle(rapor?.literasi_label).badgeBg}`}>
+                          {rapor?.literasi_label ?? "Belum Ada Data"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mb-3 leading-snug">
+                        Kemampuan murid dalam memahami, menggunakan, dan merefleksikan bacaan teks.
+                      </p>
                     </div>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-2xl font-black text-slate-900">78.4</span>
-                      <span className="text-xs font-semibold text-slate-400">/ 100</span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 ml-auto">
-                        Baik
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-[11px] text-slate-500 pt-2 border-t border-slate-200/60">
+                    <div className="space-y-1.5 text-[11px] text-slate-500 pt-2.5 border-t border-slate-200/60">
                       <div className="flex justify-between">
-                        <span>Rerata {kabupatenName}:</span>
-                        <strong className="text-slate-700 font-semibold">64.1</strong>
+                        <span>Peringkat di Prov. Sulteng:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.literasi_peringkat_prov)}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Rerata Nasional:</span>
-                        <strong className="text-slate-700 font-semibold">62.5</strong>
+                        <span>Peringkat di Kab/Kota:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.literasi_peringkat_kab)}</strong>
                       </div>
                     </div>
                   </div>
 
                   {/* Numerasi */}
-                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-800">Kemampuan Numerasi</span>
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        ↑ +2.1%
-                      </span>
+                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800">Kemampuan Numerasi</span>
+                        {formatDeltaInfo(rapor?.numerasi_perubahan, rapor?.numerasi_delta) && (
+                          <span className={`border text-[10px] font-semibold px-2 py-0.5 rounded-full ${formatDeltaInfo(rapor?.numerasi_perubahan, rapor?.numerasi_delta)?.color === 'rose' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                            {formatDeltaInfo(rapor?.numerasi_perubahan, rapor?.numerasi_delta)?.text}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mb-2">
+                        <span className={`inline-block px-3 py-1 rounded-lg text-sm font-black border shadow-2xs ${getCapaianStyle(rapor?.numerasi_label).badgeBg}`}>
+                          {rapor?.numerasi_label ?? "Belum Ada Data"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mb-3 leading-snug">
+                        Kemampuan nalar konsep matematika dan pemecahan masalah kuantitatif.
+                      </p>
                     </div>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-2xl font-black text-slate-900">68.2</span>
-                      <span className="text-xs font-semibold text-slate-400">/ 100</span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 ml-auto">
-                        Sedang
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-[11px] text-slate-500 pt-2 border-t border-slate-200/60">
+                    <div className="space-y-1.5 text-[11px] text-slate-500 pt-2.5 border-t border-slate-200/60">
                       <div className="flex justify-between">
-                        <span>Rerata {kabupatenName}:</span>
-                        <strong className="text-slate-700 font-semibold">56.3</strong>
+                        <span>Peringkat di Prov. Sulteng:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.numerasi_peringkat_prov)}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Rerata Nasional:</span>
-                        <strong className="text-slate-700 font-semibold">58.2</strong>
+                        <span>Peringkat di Kab/Kota:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.numerasi_peringkat_kab)}</strong>
                       </div>
                     </div>
                   </div>
 
                   {/* Karakter */}
-                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-800">Karakter Murid</span>
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        ↑ +1.5%
-                      </span>
+                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800">Karakter Siswa</span>
+                        {formatDeltaInfo(rapor?.karakter_perubahan, rapor?.karakter_delta) && (
+                          <span className={`border text-[10px] font-semibold px-2 py-0.5 rounded-full ${formatDeltaInfo(rapor?.karakter_perubahan, rapor?.karakter_delta)?.color === 'rose' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                            {formatDeltaInfo(rapor?.karakter_perubahan, rapor?.karakter_delta)?.text}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mb-2">
+                        <span className={`inline-block px-3 py-1 rounded-lg text-sm font-black border shadow-2xs ${getCapaianStyle(rapor?.karakter_label).badgeBg}`}>
+                          {rapor?.karakter_label ?? "Belum Ada Data"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mb-3 leading-snug">
+                        Sikap kemandirian, gotong royong, nalar kritis, dan budi pekerti peserta didik.
+                      </p>
                     </div>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-2xl font-black text-slate-900">75.0</span>
-                      <span className="text-xs font-semibold text-slate-400">/ 100</span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 ml-auto">
-                        Baik
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-[11px] text-slate-500 pt-2 border-t border-slate-200/60">
+                    <div className="space-y-1.5 text-[11px] text-slate-500 pt-2.5 border-t border-slate-200/60">
                       <div className="flex justify-between">
-                        <span>Rerata {kabupatenName}:</span>
-                        <strong className="text-slate-700 font-semibold">68.9</strong>
+                        <span>Peringkat di Prov. Sulteng:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.karakter_peringkat_prov)}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Rerata Nasional:</span>
-                        <strong className="text-slate-700 font-semibold">69.1</strong>
+                        <span>Peringkat di Kab/Kota:</span>
+                        <strong className="text-slate-800 font-semibold">{formatPeringkatText(rapor?.karakter_peringkat_kab)}</strong>
                       </div>
                     </div>
                   </div>
@@ -2018,97 +2296,126 @@ export const SekolahDetail = () => {
                     <span className="w-1.5 h-4 rounded-full bg-teal-500" />
                     Rincian Survei Lingkungan Belajar (Sulingjar)
                   </h5>
-                  <span className="text-[11px] text-slate-400">Instrumen: Guru & Kepala Sekolah</span>
+                  <span className="text-[11px] text-slate-400">Instrumen Responden: Guru & Kepala Sekolah</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-bold text-slate-800">Kualitas Pembelajaran</span>
-                      <span className="text-xs font-extrabold text-slate-900 font-mono">74</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block mb-1.5">Kualitas Pembelajaran</span>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${getCapaianStyle(rapor?.kualitas_kbm_label).badgeBg} mb-2`}>
+                        {rapor?.kualitas_kbm_label ?? "Belum Ada"}
+                      </span>
                     </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 mb-1.5">
-                      Baik
-                    </span>
                     <p className="text-[10px] text-slate-500 leading-tight">
-                      Manajemen kelas efektif, instruksi terarah dan umpan balik konstruktif guru.
+                      Manajemen kelas tertib, arahan mengajar jelas, dan keaktifan murid di kelas.
                     </p>
                   </div>
-                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-bold text-slate-800">Iklim Keamanan</span>
-                      <span className="text-xs font-extrabold text-slate-900 font-mono">86</span>
+
+                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block mb-1.5">Iklim Keamanan</span>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${getCapaianStyle(rapor?.keamanan_label).badgeBg} mb-2`}>
+                        {rapor?.keamanan_label ?? "Belum Ada"}
+                      </span>
                     </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 mb-1.5">
-                      Sangat Baik
-                    </span>
                     <p className="text-[10px] text-slate-500 leading-tight">
-                      Bebas dari risiko perundungan (bullying), hukuman fisik, dan kekerasan.
+                      Bebas dari perundungan (bullying), hukuman fisik, dan rasa aman di sekolah.
                     </p>
                   </div>
-                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-bold text-slate-800">Iklim Kebinekaan</span>
-                      <span className="text-xs font-extrabold text-slate-900 font-mono">82</span>
+
+                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block mb-1.5">Iklim Kebinekaan</span>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${getCapaianStyle(rapor?.kebinekaan_label).badgeBg} mb-2`}>
+                        {rapor?.kebinekaan_label ?? "Belum Ada"}
+                      </span>
                     </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 mb-1.5">
-                      Membudaya
-                    </span>
                     <p className="text-[10px] text-slate-500 leading-tight">
-                      Sikap inklusif tinggi terhadap keberagaman suku, agama, serta toleransi sosial.
+                      Toleransi terhadap keragaman agama, suku, dan saling menghargai sesama warga sekolah.
                     </p>
                   </div>
-                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-bold text-slate-800">Iklim Inklusivitas</span>
-                      <span className="text-xs font-extrabold text-slate-900 font-mono">71</span>
+
+                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block mb-1.5">Iklim Inklusivitas</span>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${getCapaianStyle(rapor?.inklusivitas_label).badgeBg} mb-2`}>
+                        {rapor?.inklusivitas_label ?? "Belum Ada"}
+                      </span>
                     </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 mb-1.5">
-                      Baik
-                    </span>
                     <p className="text-[10px] text-slate-500 leading-tight">
-                      Layanan akomodatif bagi murid berkebutuhan khusus & non-diskriminatif.
+                      Layanan ramah bagi murid dari berbagai latar belakang dan disabilitas.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block mb-1.5">Kesiapsiagaan Bencana</span>
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${getCapaianStyle(rapor?.bencana_label).badgeBg} mb-2`}>
+                        {rapor?.bencana_label ?? "Belum Ada"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-tight">
+                      Kesiapan mitigasi dan jalur evakuasi keselamatan sekolah di daerah rawan bencana.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Rekomendasi PBD */}
+              {/* Rekomendasi PBD Dinamis */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                     <span className="w-1.5 h-4 rounded-full bg-amber-500" />
-                    Rekomendasi Perencanaan Berbasis Data (PBD)
+                    Rekomendasi Pembenahan (Perencanaan Berbasis Data)
                   </h5>
-                  <span className="text-[11px] text-slate-400">Fokus Pembenahan Tahun 2024</span>
+                  <span className="text-[11px] text-slate-400">Saran Tindak Lanjut Berdasarkan Capaian Nyata</span>
                 </div>
                 <div className="space-y-2.5">
-                  <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-200/60 flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-amber-500 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      1
-                    </span>
-                    <div className="text-xs">
-                      <strong className="text-slate-900 font-bold block mb-0.5">
-                        Peningkatan Kemampuan Numerasi Pemecahan Masalah Kontekstual
-                      </strong>
-                      <p className="text-slate-600">
-                        Pelatihan berkala bagi guru MIPA mengenai modul ajar Kurikulum Merdeka berbasis soal analisis bernalar tinggi (HOTS).
-                      </p>
+                  {dynamicRecs.map((rec) => (
+                    <div
+                      key={rec.no}
+                      className={`p-3.5 rounded-xl border flex items-start gap-3 ${
+                        rec.color === "rose"
+                          ? "bg-rose-50/50 border-rose-200/70"
+                          : rec.color === "amber"
+                          ? "bg-amber-50/50 border-amber-200/70"
+                          : rec.color === "indigo"
+                          ? "bg-indigo-50/50 border-indigo-200/70"
+                          : rec.color === "emerald"
+                          ? "bg-emerald-50/50 border-emerald-200/70"
+                          : "bg-blue-50/50 border-blue-200/70"
+                      }`}
+                    >
+                      <span
+                        className={`w-5 h-5 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 ${
+                          rec.color === "rose"
+                            ? "bg-rose-600"
+                            : rec.color === "amber"
+                            ? "bg-amber-500"
+                            : rec.color === "indigo"
+                            ? "bg-indigo-600"
+                            : rec.color === "emerald"
+                            ? "bg-emerald-600"
+                            : "bg-blue-600"
+                        }`}
+                      >
+                        {rec.no}
+                      </span>
+                      <div className="text-xs flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <strong className="text-slate-900 font-bold block">
+                            {rec.title}
+                          </strong>
+                          <span className="text-[10px] font-semibold px-2 py-0.2 rounded bg-white/80 border border-slate-200/70 text-slate-600">
+                            {rec.fokus}
+                          </span>
+                        </div>
+                        <p className="text-slate-600 leading-relaxed font-medium">
+                          {rec.desc}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-200/60 flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      2
-                    </span>
-                    <div className="text-xs">
-                      <strong className="text-slate-900 font-bold block mb-0.5">
-                        Penguatan Literasi Digital & Optimalisasi Perpustakaan
-                      </strong>
-                      <p className="text-slate-600">
-                        Pemanfaatan unit Chromebook bantuan DAK untuk integrasi platform e-library dan materi bacaan fiksi/nonfiksi terakreditasi.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -2116,16 +2423,16 @@ export const SekolahDetail = () => {
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/70 text-xs">
               <span className="text-slate-400 text-[11px]">
-                Sumber: Pusmendik & Ditjen PAUD Dikdasmen · Kemendikbudristek
+                Sumber: Pusat Asesmen Pendidikan (Pusmendik) · Kemendikbudristek RI Data 2025
               </span>
               <div className="flex items-center gap-2.5">
                 <button
-                  onClick={() => alert(`Untuk fitur unduh rapor mutu untuk sekolah ${school.nama} akan segera hadir!!`)}
+                  onClick={() => alert(`Fitur unduh ringkasan rapor mutu untuk sekolah ${school.nama} akan segera hadir!`)}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-xs hover:-translate-y-0.5 active:scale-95 transition-all duration-150 cursor-pointer"
                   type="button"
                 >
                   <Download className="w-4 h-4 text-slate-500" />
-                  <span>Unduh PDF Rapor Mutu</span>
+                  <span>Unduh Ringkasan Mutu</span>
                 </button>
                 <button
                   onClick={() => setIsRaporModalOpen(false)}

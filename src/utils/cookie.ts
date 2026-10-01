@@ -6,7 +6,7 @@ export const setAccessTokenCookie = (accessToken: string | undefined) => {
   if (accessToken) {
     Cookie.set(TOKEN_PPDB, accessToken, {
       expires: 7,
-      secure: true,
+      secure: typeof window !== "undefined" && window.location.protocol === "https:",
     });
     localStorage.setItem(TOKEN_PPDB, accessToken);
   }
@@ -14,7 +14,7 @@ export const setAccessTokenCookie = (accessToken: string | undefined) => {
 
 export const getAccessTokenCookie = (): string | null => {
   const accessTokenCookie = Cookie.get(TOKEN_PPDB);
-  return accessTokenCookie ?? null;
+  return accessTokenCookie ?? (typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_PPDB) : null);
 };
 
 export const clearAccessTokenCookie = () => {

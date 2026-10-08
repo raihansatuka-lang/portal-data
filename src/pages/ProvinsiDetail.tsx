@@ -35,6 +35,7 @@ import { GeneralDataSection } from "@/components/Sections/GeneralDataSection";
 import { DeleteConfirmModal } from "@/components/Admin/DeleteConfirmModal";
 import { SekolahEditModal } from "@/components/Admin/SekolahEditModal";
 import type { SekolahMarker } from "@/types";
+import { isKemenag } from "./KabupatenDetail";
 
 // ─── Jenjang Kewenangan Provinsi ──────────────────────────────────────────────
 const JENJANG_PROVINSI = ["SMA", "MA", "SMK", "SLB", "SMTK"];
@@ -336,6 +337,7 @@ export const ProvinsiDetail = () => {
   const [selectedCabdis, setSelectedCabdis] = useState<number | null>(null);
   const [selectedKabKode, setSelectedKabKode] = useState<string | null>(null);
   const [hoveredKabKode, setHoveredKabKode] = useState<string | null>(null);
+  const [filterNaungan, setFilterNaungan] = useState<"semua" | "kemendikdasmen" | "kemenag">("semua");
   const [filterJenjang, setFilterJenjang] = useState<string>("semua");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterAkreditasi, setFilterAkreditasi] = useState<string>("");
@@ -424,6 +426,10 @@ export const ProvinsiDetail = () => {
         if (selectedKabKode !== null) {
           if (String(s.kode_kabupaten ?? "") !== selectedKabKode) return false;
         }
+
+        // Filter Naungan (Pemprov/Kemendikdasmen vs Kemenag)
+        if (filterNaungan === "kemenag" && !isKemenag(s.bentuk_pendidikan)) return false;
+        if (filterNaungan === "kemendikdasmen" && isKemenag(s.bentuk_pendidikan)) return false;
 
         // Filter Jenjang Chips
         if (filterJenjang !== "semua") {
@@ -1262,34 +1268,99 @@ export const ProvinsiDetail = () => {
               </div>
             </div>
 
-            {/* Filter Jenjang Chips (Gabungan Semua Jenjang) */}
+            {/* 1. Toggle Naungan: Alternatif 2 (Semua | Kemendikdasmen | Kemenag) */}
+            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl shrink-0">
+              <button
+                onClick={() => {
+                  setFilterNaungan("semua");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "semua"
+                    ? "bg-slate-800 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Tampilkan semua satuan pendidikan menengah"
+              >
+                <span>Semua</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterNaungan("kemendikdasmen");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "kemendikdasmen"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Filter sekolah naungan Pemprov / Kemendikdasmen (SMA / SMK / SLB)"
+              >
+                <span className="truncate">Kemendikdasmen</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterNaungan("kemenag");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "kemenag"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Filter madrasah aliyah naungan Kemenag (MA)"
+              >
+                <span className="truncate">Kemenag</span>
+              </button>
+            </div>
+
+            {/* Filter Jenjang Chips (Dinamis sesuai Naungan) */}
             <div className="flex flex-wrap gap-1.5 shrink-0">
-              {[
-                { key: "semua", label: "Semua" },
-                { key: "SMA", label: "SMA" },
-                { key: "SMK", label: "SMK" },
-                { key: "SLB", label: "SLB" },
-                { key: "MA", label: "MA" },
-                { key: "SMTK", label: "SMTK" },
-              ].filter((item) => {
-                if (item.key === "semua") return true;
-                const matchKeys = JENJANG_CONFIG[item.key]?.matchKeys ?? [item.key];
-                return allSekolah.some((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
-              }).map((item) => {
-                const active = filterJenjang === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setFilterJenjang(item.key)}
-                    className={`px-3 py-1 rounded-full text-[10.5px] font-black uppercase tracking-wider border transition-all cursor-pointer ${active
-                        ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                        : "bg-slate-50 text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-white"
-                      }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+              {(() => {
+                let chips: { key: string; label: string }[] = [{ key: "semua", label: "Semua" }];
+                if (filterNaungan === "kemenag") {
+                  chips.push({ key: "MA", label: "MA" });
+                } else if (filterNaungan === "kemendikdasmen") {
+                  chips.push(
+                    { key: "SMA", label: "SMA" },
+                    { key: "SMK", label: "SMK" },
+                    { key: "SLB", label: "SLB" }
+                  );
+                } else {
+                  chips.push(
+                    { key: "SMA", label: "SMA" },
+                    { key: "SMK", label: "SMK" },
+                    { key: "SLB", label: "SLB" },
+                    { key: "MA", label: "MA" },
+                    { key: "SMTK", label: "SMTK" }
+                  );
+                }
+
+                return chips
+                  .filter((item) => {
+                    if (item.key === "semua") return true;
+                    const matchKeys = JENJANG_CONFIG[item.key]?.matchKeys ?? [item.key];
+                    return allSekolah.some((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
+                  })
+                  .map((item) => {
+                    const active = filterJenjang === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setFilterJenjang(item.key)}
+                        className={`px-3 py-1 rounded-full text-[10.5px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                          active
+                            ? filterNaungan === "kemenag"
+                              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                              : "bg-blue-600 text-white border-blue-600 shadow-xs"
+                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-white"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  });
+              })()}
             </div>
 
             {/* Filter Group: Status & Akreditasi */}
@@ -1419,6 +1490,15 @@ export const ProvinsiDetail = () => {
                             style={{ background: `${color}15`, color: color }}
                           >
                             {jenjang}
+                          </span>
+                          <span
+                            className={`font-black px-1.5 py-0.2 rounded text-[8px] border ${
+                              isKemenag(jenjang)
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {isKemenag(jenjang) ? "Kemenag" : "Kemendikdasmen"}
                           </span>
                           <span>•</span>
                           <span>{school.status_sekolah ?? "—"}</span>

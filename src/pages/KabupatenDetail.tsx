@@ -84,16 +84,29 @@ const KECAMATAN_COLORS = [
   "#06b6d4", "#6366f1", "#22c55e", "#a855f7", "#f97316"
 ];
 
-// ─── Config Lengkap Jenjang Pendidikan (Formal & Non-Formal) ───────────────────
+// ─── Naungan Helpers & Config Lengkap Jenjang ────────────────────────────────
+export const KEMENAG_JENJANG = ["RA", "MI", "MTS", "MA", "MAK"];
+
+export const isKemenag = (bentuk?: string | null): boolean => {
+  return KEMENAG_JENJANG.includes((bentuk ?? "").toUpperCase().trim());
+};
+
 const JENJANG_CONFIG: Record<string, { label: string; color: string; bg: string; text: string; iconBg: string; iconColor: string; matchKeys: string[] }> = {
-  TK: { label: "PAUD / TK", color: "#f59e0b", bg: "bg-amber-50", text: "text-amber-700", iconBg: "#FEF3C7", iconColor: "#D97706", matchKeys: ["TK", "KB", "SPS", "TPA", "RA"] },
-  SD: { label: "SD / MI", color: "#10b981", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#DCFCE7", iconColor: "#15803D", matchKeys: ["SD", "MI"] },
-  SMP: { label: "SMP / MTs", color: "#3b82f6", bg: "bg-sky-50", text: "text-sky-700", iconBg: "#DBEAFE", iconColor: "#1D4ED8", matchKeys: ["SMP", "MTs"] },
-  SMA: { label: "SMA / MA", color: "#8b5cf6", bg: "bg-purple-50", text: "text-purple-700", iconBg: "#EDE9FE", iconColor: "#6D28D9", matchKeys: ["SMA", "MA"] },
-  SMK: { label: "SMK", color: "#ec4899", bg: "bg-pink-50", text: "text-pink-700", iconBg: "#FCE7F3", iconColor: "#BE185D", matchKeys: ["SMK", "MAK"] },
+  // ── Kemendikdasmen (Dinas Pendidikan) ──
+  TK: { label: "PAUD / TK", color: "#f59e0b", bg: "bg-amber-50", text: "text-amber-700", iconBg: "#FEF3C7", iconColor: "#D97706", matchKeys: ["TK", "KB", "SPS", "TPA"] },
+  SD: { label: "SD", color: "#10b981", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#DCFCE7", iconColor: "#15803D", matchKeys: ["SD"] },
+  SMP: { label: "SMP", color: "#3b82f6", bg: "bg-sky-50", text: "text-sky-700", iconBg: "#DBEAFE", iconColor: "#1D4ED8", matchKeys: ["SMP"] },
+  SMA: { label: "SMA", color: "#8b5cf6", bg: "bg-purple-50", text: "text-purple-700", iconBg: "#EDE9FE", iconColor: "#6D28D9", matchKeys: ["SMA"] },
+  SMK: { label: "SMK", color: "#ec4899", bg: "bg-pink-50", text: "text-pink-700", iconBg: "#FCE7F3", iconColor: "#BE185D", matchKeys: ["SMK"] },
   SLB: { label: "SLB", color: "#ef4444", bg: "bg-rose-50", text: "text-rose-700", iconBg: "#FFE4E6", iconColor: "#E11D48", matchKeys: ["SLB"] },
   PKBM: { label: "PKBM / SKB", color: "#d97706", bg: "bg-orange-50", text: "text-orange-700", iconBg: "#FFEDD5", iconColor: "#C2410C", matchKeys: ["PKBM", "SKB", "Paket A", "Paket B", "Paket C"] },
   Kursus: { label: "LKP / Kursus", color: "#0891b2", bg: "bg-cyan-50", text: "text-cyan-700", iconBg: "#CFFAFE", iconColor: "#0E7490", matchKeys: ["Kursus", "LKP"] },
+
+  // ── Kemenag (Madrasah) ──
+  RA: { label: "RA", color: "#059669", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#D1FAE5", iconColor: "#047857", matchKeys: ["RA"] },
+  MI: { label: "MI", color: "#047857", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#D1FAE5", iconColor: "#047857", matchKeys: ["MI"] },
+  MTs: { label: "MTs", color: "#065f46", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#D1FAE5", iconColor: "#047857", matchKeys: ["MTs", "MTS"] },
+  MA: { label: "MA", color: "#064e3b", bg: "bg-emerald-50", text: "text-emerald-700", iconBg: "#D1FAE5", iconColor: "#047857", matchKeys: ["MA", "MAK"] },
 };
 
 const KAB_JENJANG_KEYS = ["TK", "KB", "SPS", "TPA", "RA", "SD", "MI", "SMP", "MTs", "PKBM", "SKB", "Kursus", "LKP"];
@@ -320,6 +333,7 @@ export const KabupatenDetail = () => {
   }, [searchParams]);
 
   const [selectedSchool, setSelectedSchool] = useState<SekolahMarker | null>(null);
+  const [filterNaungan, setFilterNaungan] = useState<"semua" | "kemendikdasmen" | "kemenag">("semua");
   const [filterJenjang, setFilterJenjang] = useState<string>("semua");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterAkreditasi, setFilterAkreditasi] = useState<string>("");
@@ -413,44 +427,72 @@ export const KabupatenDetail = () => {
       .finally(() => setLoadingData(false));
   }, [kode]);
 
-  // ── Base Sekolah terfilter wewenang ──────────────────────────────────────
+  // ── Base Sekolah terfilter wewenang & naungan ────────────────────────────
   const baseSekolahList = useMemo(() => {
-    if (filterWewenang === "kab") {
-      return allSekolah.filter((s) => KAB_JENJANG_KEYS.includes(s.bentuk_pendidikan ?? ""));
-    }
-    return allSekolah;
-  }, [allSekolah, filterWewenang]);
+    let list = allSekolah;
 
-  // ── Computed: Stat Cards Breakdown (Total, TK, SD, SMP, SMA) ────────────
+    if (filterWewenang === "kab") {
+      list = list.filter((s) => KAB_JENJANG_KEYS.includes(s.bentuk_pendidikan ?? ""));
+    }
+
+    if (filterNaungan === "kemenag") {
+      list = list.filter((s) => isKemenag(s.bentuk_pendidikan));
+    } else if (filterNaungan === "kemendikdasmen") {
+      list = list.filter((s) => !isKemenag(s.bentuk_pendidikan));
+    }
+
+    return list;
+  }, [allSekolah, filterWewenang, filterNaungan]);
+
+  // ── Computed: Stat Cards Breakdown (Total, TK/RA, SD/MI, SMP/MTs, SMA/MA) ──
   const totalStats = useMemo(() => {
     const total = baseSekolahList.length;
 
-    const getGroupStats = (groupKey: string) => {
-      const matchKeys = JENJANG_CONFIG[groupKey]?.matchKeys ?? [];
+    const getGroupStats = (matchKeys: string[]) => {
       const list = baseSekolahList.filter((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
       const negeri = list.filter((s) => s.status_sekolah?.toLowerCase() === "negeri").length;
       const swasta = list.filter((s) => s.status_sekolah?.toLowerCase() === "swasta").length;
       return { total: list.length, negeri, swasta };
     };
 
-    const tkStats = getGroupStats("TK");
-    const sdStats = getGroupStats("SD");
-    const smpStats = getGroupStats("SMP");
+    const tkKeys =
+      filterNaungan === "kemenag"
+        ? ["RA"]
+        : filterNaungan === "kemendikdasmen"
+        ? ["TK", "KB", "SPS", "TPA"]
+        : ["TK", "KB", "SPS", "TPA", "RA"];
+    const tkStats = getGroupStats(tkKeys);
 
-    const getSmaStats = () => {
-      const matchKeys = JENJANG_CONFIG["SMA"]?.matchKeys ?? ["SMA", "MA"];
-      const list = allSekolah.filter((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
-      const negeri = list.filter((s) => s.status_sekolah?.toLowerCase() === "negeri").length;
-      const swasta = list.filter((s) => s.status_sekolah?.toLowerCase() === "swasta").length;
-      return { total: list.length, negeri, swasta };
-    };
-    const smaStats = getSmaStats();
+    const sdKeys =
+      filterNaungan === "kemenag"
+        ? ["MI"]
+        : filterNaungan === "kemendikdasmen"
+        ? ["SD"]
+        : ["SD", "MI"];
+    const sdStats = getGroupStats(sdKeys);
+
+    const smpKeys =
+      filterNaungan === "kemenag"
+        ? ["MTs", "MTS"]
+        : filterNaungan === "kemendikdasmen"
+        ? ["SMP"]
+        : ["SMP", "MTs", "MTS"];
+    const smpStats = getGroupStats(smpKeys);
+
+    const smaList = allSekolah.filter((s) => {
+      if (filterNaungan === "kemenag") return ["MA", "MAK"].includes(s.bentuk_pendidikan ?? "");
+      if (filterNaungan === "kemendikdasmen") return ["SMA", "SMK", "SLB"].includes(s.bentuk_pendidikan ?? "");
+      return ["SMA", "MA", "SMK", "SLB", "MAK"].includes(s.bentuk_pendidikan ?? "");
+    });
+    const smaNegeri = smaList.filter((s) => s.status_sekolah?.toLowerCase() === "negeri").length;
+    const smaSwasta = smaList.filter((s) => s.status_sekolah?.toLowerCase() === "swasta").length;
+    const smaStats = { total: smaList.length, negeri: smaNegeri, swasta: smaSwasta };
 
     const akrA = baseSekolahList.filter((s) => s.akreditasi?.toUpperCase() === "A").length;
     const sekolah3T = baseSekolahList.filter((s) => s.is_3t).length;
 
     return { total, tk: tkStats, sd: sdStats, smp: smpStats, sma: smaStats, akrA, sekolah3T };
-  }, [baseSekolahList, allSekolah]);
+  }, [baseSekolahList, allSekolah, filterNaungan]);
 
   // ── Computed: Data Umum Satuan Pendidikan (Section 5) ────────────────────
   const generalData = useMemo(() => {
@@ -862,13 +904,17 @@ export const KabupatenDetail = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
 
           {/* Card 1: Total Sekolah */}
-          <div className="col-span-2 sm:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-3.5 sm:p-4.5 text-white shadow-md shadow-blue-500/20 flex flex-col justify-between">
+          <div className={`col-span-2 sm:col-span-1 rounded-2xl p-3.5 sm:p-4.5 text-white shadow-md flex flex-col justify-between transition-all duration-300 ${
+            filterNaungan === "kemenag"
+              ? "bg-gradient-to-br from-emerald-600 to-teal-700 shadow-emerald-500/20"
+              : "bg-gradient-to-br from-blue-600 to-indigo-600 shadow-blue-500/20"
+          }`}>
             <div className="flex items-center justify-between mb-2">
               <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/20 rounded-xl flex items-center justify-center">
                 <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <span className="text-[9px] font-black uppercase tracking-widest opacity-85 bg-white/15 px-2 py-0.5 rounded-full">
-                Total Sekolah
+                {filterNaungan === "kemenag" ? "Total Madrasah" : "Total Sekolah"}
               </span>
             </div>
             <div>
@@ -876,22 +922,35 @@ export const KabupatenDetail = () => {
                 {loadingData ? "..." : totalStats.total.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] sm:text-[11px] opacity-80 font-semibold">
-                {filterWewenang === "kab" ? "PAUD–SMP & Dikmas" : "Semua Jenjang"}
+                {filterNaungan === "kemenag"
+                  ? "Kementerian Agama (Kemenag)"
+                  : filterNaungan === "kemendikdasmen"
+                  ? "Dinas Pendidikan (Kemendikdasmen)"
+                  : filterWewenang === "kab"
+                  ? "PAUD–SMP & Dikmas"
+                  : "Semua Satuan Pendidikan"}
               </p>
             </div>
           </div>
 
-          {/* Card 2: TK / PAUD */}
+          {/* Card 2: TK / PAUD / RA */}
           <div className="bg-white rounded-2xl p-3.5 sm:p-4.5 shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
-                style={{ background: JENJANG_CONFIG.TK.iconBg, color: JENJANG_CONFIG.TK.iconColor }}
+                style={{
+                  background: filterNaungan === "kemenag" ? JENJANG_CONFIG.RA.iconBg : JENJANG_CONFIG.TK.iconBg,
+                  color: filterNaungan === "kemenag" ? JENJANG_CONFIG.RA.iconColor : JENJANG_CONFIG.TK.iconColor,
+                }}
               >
                 <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.TK.text} ${JENJANG_CONFIG.TK.bg} px-2 py-0.5 rounded-full border border-amber-200/60`}>
-                PAUD / TK
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+                filterNaungan === "kemenag"
+                  ? `${JENJANG_CONFIG.RA.text} ${JENJANG_CONFIG.RA.bg} border-emerald-200/60`
+                  : `${JENJANG_CONFIG.TK.text} ${JENJANG_CONFIG.TK.bg} border-amber-200/60`
+              }`}>
+                {filterNaungan === "kemenag" ? "RA" : filterNaungan === "kemendikdasmen" ? "PAUD / TK" : "PAUD / TK / RA"}
               </span>
             </div>
             <div>
@@ -909,12 +968,15 @@ export const KabupatenDetail = () => {
             <div className="flex items-center justify-between mb-2">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
-                style={{ background: JENJANG_CONFIG.SD.iconBg, color: JENJANG_CONFIG.SD.iconColor }}
+                style={{
+                  background: filterNaungan === "kemenag" ? JENJANG_CONFIG.MI.iconBg : JENJANG_CONFIG.SD.iconBg,
+                  color: filterNaungan === "kemenag" ? JENJANG_CONFIG.MI.iconColor : JENJANG_CONFIG.SD.iconColor,
+                }}
               >
                 <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SD.text} ${JENJANG_CONFIG.SD.bg} px-2 py-0.5 rounded-full border border-emerald-200/60`}>
-                SD / MI
+                {filterNaungan === "kemenag" ? "MI" : filterNaungan === "kemendikdasmen" ? "SD" : "SD / MI"}
               </span>
             </div>
             <div>
@@ -932,12 +994,19 @@ export const KabupatenDetail = () => {
             <div className="flex items-center justify-between mb-2">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
-                style={{ background: JENJANG_CONFIG.SMP.iconBg, color: JENJANG_CONFIG.SMP.iconColor }}
+                style={{
+                  background: filterNaungan === "kemenag" ? JENJANG_CONFIG.MTs.iconBg : JENJANG_CONFIG.SMP.iconBg,
+                  color: filterNaungan === "kemenag" ? JENJANG_CONFIG.MTs.iconColor : JENJANG_CONFIG.SMP.iconColor,
+                }}
               >
                 <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMP.text} ${JENJANG_CONFIG.SMP.bg} px-2 py-0.5 rounded-full border border-sky-200/60`}>
-                SMP / MTs
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+                filterNaungan === "kemenag"
+                  ? `${JENJANG_CONFIG.MTs.text} ${JENJANG_CONFIG.MTs.bg} border-emerald-200/60`
+                  : `${JENJANG_CONFIG.SMP.text} ${JENJANG_CONFIG.SMP.bg} border-sky-200/60`
+              }`}>
+                {filterNaungan === "kemenag" ? "MTs" : filterNaungan === "kemendikdasmen" ? "SMP" : "SMP / MTs"}
               </span>
             </div>
             <div>
@@ -955,12 +1024,19 @@ export const KabupatenDetail = () => {
             <div className="flex items-center justify-between mb-2">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-2xs"
-                style={{ background: JENJANG_CONFIG.SMA.iconBg, color: JENJANG_CONFIG.SMA.iconColor }}
+                style={{
+                  background: filterNaungan === "kemenag" ? JENJANG_CONFIG.MA.iconBg : JENJANG_CONFIG.SMA.iconBg,
+                  color: filterNaungan === "kemenag" ? JENJANG_CONFIG.MA.iconColor : JENJANG_CONFIG.SMA.iconColor,
+                }}
               >
                 <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
-              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest ${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} px-2 py-0.5 rounded-full border border-purple-200/60`}>
-                SMA Sederajat
+              <span className={`text-[8.5px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+                filterNaungan === "kemenag"
+                  ? `${JENJANG_CONFIG.MA.text} ${JENJANG_CONFIG.MA.bg} border-emerald-200/60`
+                  : `${JENJANG_CONFIG.SMA.text} ${JENJANG_CONFIG.SMA.bg} border-purple-200/60`
+              }`}>
+                {filterNaungan === "kemenag" ? "MA" : filterNaungan === "kemendikdasmen" ? "SMA Sederajat" : "SMA / MA Sederajat"}
               </span>
             </div>
             <div>
@@ -1242,39 +1318,120 @@ export const KabupatenDetail = () => {
               </button>
             </div>
 
-            {/* 2. Filter Jenjang Chips (Dinamis sesuai data yang ada) */}
+            {/* 1.5 Toggle Naungan: Alternatif 2 (Semua | Kemendikdasmen | Kemenag) */}
+            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl shrink-0">
+              <button
+                onClick={() => {
+                  setFilterNaungan("semua");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "semua"
+                    ? "bg-slate-800 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Tampilkan semua satuan pendidikan"
+              >
+                <span>Semua</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterNaungan("kemendikdasmen");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "kemendikdasmen"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Filter sekolah naungan Kemendikdasmen (Dinas Pendidikan)"
+              >
+                <span className="truncate">Kemendikdasmen</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterNaungan("kemenag");
+                  setFilterJenjang("semua");
+                }}
+                className={`py-1.5 px-1 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  filterNaungan === "kemenag"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                }`}
+                title="Filter madrasah naungan Kementerian Agama"
+              >
+                <span className="truncate">Kemenag</span>
+              </button>
+            </div>
+
+            {/* 2. Filter Jenjang Chips (Dinamis sesuai naungan & wewenang) */}
             <div className="flex flex-wrap gap-1.5 shrink-0">
-              {[
-                { key: "semua", label: "Semua" },
-                { key: "TK", label: "PAUD / TK" },
-                { key: "SD", label: "SD" },
-                { key: "SMP", label: "SMP" },
-                ...(filterWewenang === "semua" ? [
-                  { key: "SMA", label: "SMA" },
-                  { key: "SMK", label: "SMK" },
-                  { key: "SLB", label: "SLB" },
-                ] : []),
-                { key: "PKBM", label: "PKBM" },
-                { key: "Kursus", label: "Kursus" },
-              ].filter((item) => {
-                if (item.key === "semua") return true;
-                const matchKeys = JENJANG_CONFIG[item.key]?.matchKeys ?? [item.key];
-                return baseSekolahList.some((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
-              }).map((item) => {
-                const active = filterJenjang === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setFilterJenjang(item.key)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${active
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-white"
-                      }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+              {(() => {
+                let chips: { key: string; label: string }[] = [{ key: "semua", label: "Semua" }];
+                if (filterNaungan === "kemenag") {
+                  chips.push(
+                    { key: "RA", label: "RA" },
+                    { key: "MI", label: "MI" },
+                    { key: "MTs", label: "MTs" },
+                    ...(filterWewenang === "semua" ? [{ key: "MA", label: "MA" }] : [])
+                  );
+                } else if (filterNaungan === "kemendikdasmen") {
+                  chips.push(
+                    { key: "TK", label: "PAUD / TK" },
+                    { key: "SD", label: "SD" },
+                    { key: "SMP", label: "SMP" },
+                    ...(filterWewenang === "semua" ? [
+                      { key: "SMA", label: "SMA" },
+                      { key: "SMK", label: "SMK" },
+                      { key: "SLB", label: "SLB" },
+                    ] : []),
+                    { key: "PKBM", label: "PKBM" },
+                    { key: "Kursus", label: "Kursus" }
+                  );
+                } else {
+                  chips.push(
+                    { key: "TK", label: "PAUD / TK" },
+                    { key: "SD", label: "SD" },
+                    { key: "SMP", label: "SMP" },
+                    ...(filterWewenang === "semua" ? [
+                      { key: "SMA", label: "SMA" },
+                      { key: "SMK", label: "SMK" },
+                      { key: "SLB", label: "SLB" },
+                      { key: "MA", label: "MA" },
+                    ] : []),
+                    { key: "RA", label: "RA" },
+                    { key: "MI", label: "MI" },
+                    { key: "MTs", label: "MTs" },
+                    { key: "PKBM", label: "PKBM" },
+                    { key: "Kursus", label: "Kursus" }
+                  );
+                }
+
+                return chips
+                  .filter((item) => {
+                    if (item.key === "semua") return true;
+                    const matchKeys = JENJANG_CONFIG[item.key]?.matchKeys ?? [item.key];
+                    return baseSekolahList.some((s) => matchKeys.includes(s.bentuk_pendidikan ?? ""));
+                  })
+                  .map((item) => {
+                    const active = filterJenjang === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setFilterJenjang(item.key)}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                          active
+                            ? filterNaungan === "kemenag"
+                              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                              : "bg-blue-600 text-white border-blue-600 shadow-xs"
+                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-white"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  });
+              })()}
             </div>
 
             {/* 3. Dropdown Filters: Status & Akreditasi */}
@@ -1409,6 +1566,15 @@ export const KabupatenDetail = () => {
                             style={{ background: `${color}15`, color: color }}
                           >
                             {jenjang}
+                          </span>
+                          <span
+                            className={`font-black px-1.5 py-0.2 rounded text-[8px] border ${
+                              isKemenag(jenjang)
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {isKemenag(jenjang) ? "Kemenag" : "Kemendikdasmen"}
                           </span>
                           <span>•</span>
                           <span>{school.status_sekolah ?? "—"}</span>

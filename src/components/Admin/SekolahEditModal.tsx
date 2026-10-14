@@ -17,6 +17,7 @@ import {
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { CARTO_TILES } from "@/config/mapConfig";
 
 // ─── Custom Pin Marker untuk Leaflet Picker ──────────────────────────────────
 const createPickerIcon = () =>
@@ -666,11 +667,13 @@ export const SekolahEditModal: React.FC<SekolahEditModalProps> = ({
                       center={mapCenter}
                       zoom={hasCoords ? 15 : 8}
                       scrollWheelZoom={true}
+                      attributionControl={false}
                       className="w-full h-full"
                     >
                       <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        url={CARTO_TILES.VOYAGER}
+                        maxZoom={20}
+                        maxNativeZoom={19}
                       />
                       <MapEventsHandler onPick={handleMapLocationPick} />
                       <MapRecenterHelper center={mapCenter} zoom={hasCoords ? 15 : 8} />

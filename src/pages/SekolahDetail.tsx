@@ -477,6 +477,8 @@ export const SekolahDetail = () => {
   const [isDoModalOpen, setIsDoModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isBlptModalOpen, setIsBlptModalOpen] = useState<boolean>(false);
+  // Status Pelaporan BOSP (Telah Melapor vs Belum Melapor untuk Hak Pencairan)
+  const [bospReportOverride, setBospReportOverride] = useState<boolean | null>(null);
   const mapRef = useRef<L.Map | null>(null);
 
   const handleEditSuccess = (updatedData: any) => {
@@ -898,9 +900,24 @@ export const SekolahDetail = () => {
   const internetType = data.is_3t ? "Bantuan Satelit Starlink LEO Disdik Sulteng" : "Fibre Optic & Backup Starlink LEO";
   const internetBandwidth = data.is_3t ? "150 - 220 Mbps" : "100 Mbps Dedicated";
 
-  // Poin 7: Dana BOSNAS dan BOSDA
+  // Poin 7: Dana BOSP (Bantuan Operasional Satuan Pendidikan - BOSNAS & BOSDA)
   const bosRegulerVal = Math.max(120_000_000, siswaCount * 1_500_000);
   const bosdaVal = isMenengah ? 125_000_000 : 65_000_000;
+  const totalBospVal = bosRegulerVal + bosdaVal;
+
+  // Logika Pelaporan BOSP:
+  // "hanya sekolah yang telah sampai melapor baru dapat dicairkan"
+  const isApiReported = data?.status_lapor_bosp
+    ? (data.status_lapor_bosp === "sudah" || data.status_lapor_bosp === "telah_lapor")
+    : (school.keaktifan === "1" || school.keaktifan === "Aktif" || school.partisipasi_bos === "Ya");
+  const isBospReported = bospReportOverride !== null ? bospReportOverride : isApiReported;
+
+  const bospTahap1Reguler = bosRegulerVal * 0.5;
+  const bospTahap2Reguler = isBospReported ? bosRegulerVal * 0.5 : 0;
+  const bospSemester1Bosda = bosdaVal * 0.5;
+  const bospSemester2Bosda = isBospReported ? bosdaVal * 0.5 : 0;
+  const totalBospTersalurkan = bospTahap1Reguler + bospTahap2Reguler + bospSemester1Bosda + bospSemester2Bosda;
+  const persentaseSalurBosp = Math.round((totalBospTersalurkan / totalBospVal) * 100);
 
   // Sarpras
   const totalRuangan = Number(school.total_ruangan) || 58;
@@ -1220,11 +1237,11 @@ export const SekolahDetail = () => {
             </div>
           </div>
 
-          {/* KARTU 4: TOTAL DANA OPERASIONAL (Poin 7) */}
+          {/* KARTU 4: TOTAL DANA OPERASIONAL BOSP (Poin 7) */}
           <div
             onClick={() => scrollToSection("section-alokasi-bos")}
             className="group relative bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/80 shadow-xs hover:border-emerald-400 hover:shadow-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col justify-between cursor-pointer"
-            title="Klik untuk melihat Transparansi Dana BOSNAS & BOSDA"
+            title="Klik untuk melihat Transparansi Dana BOSP (BOSNAS & BOSDA)"
           >
             {/* Top Accent Highlight Reveal */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -1232,7 +1249,7 @@ export const SekolahDetail = () => {
             <div>
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase text-slate-400 tracking-wider truncate">
-                  Pagu BOS
+                  Alokasi BOSP
                 </span>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shadow-2xs group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200 shrink-0">
                   <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1240,20 +1257,26 @@ export const SekolahDetail = () => {
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-lg sm:text-2xl font-black text-slate-900 group-hover:text-emerald-700 transition-colors duration-150">
-                  Rp {((bosRegulerVal + bosdaVal) / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })}
+                  Rp {(totalBospVal / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })}
                 </span>
                 <span className="text-[9px] sm:text-xs font-bold text-slate-400">Jt/Th</span>
               </div>
             </div>
             <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex items-center justify-between text-[9.5px] sm:text-xs font-bold">
-              <span className="text-slate-500">100% Salur</span>
-              <span className="text-emerald-700 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded border border-emerald-200 text-[9px] sm:text-[10.5px]">
-                Serap 95.8%
+              <span className={isBospReported ? "text-emerald-700 font-extrabold" : "text-amber-600 font-extrabold"}>
+                {persentaseSalurBosp}% Salur
+              </span>
+              <span className={`px-1.5 sm:px-2 py-0.5 rounded border text-[9px] sm:text-[10.5px] font-bold ${
+                isBospReported
+                  ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                  : "text-amber-700 bg-amber-50 border-amber-200"
+              }`}>
+                {isBospReported ? "Telah Melapor" : "Belum Melapor"}
               </span>
             </div>
             <div className="mt-2 text-right hidden sm:block">
               <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600 inline-flex items-center gap-0.5 transition-colors">
-                <span>Rincian BOSNAS/BOSDA</span>
+                <span>Rincian BOSP (Pusat & Daerah)</span>
                 <ArrowDown className="w-2.5 h-2.5 group-hover:translate-y-0.5 transition-transform duration-150" />
               </span>
             </div>
@@ -1899,32 +1922,76 @@ export const SekolahDetail = () => {
         </div>
 
         {/* ═════════════════════════════════════════════════════════════════════
-            6. SECTION 3: TRANSPARANSI ALOKASI DANA BOS (BOSNAS & BOSDA) (Poin 7)
+            6. SECTION 3: TRANSPARANSI ALOKASI DANA BOSP (Pusat & Daerah) (Poin 7)
            ═════════════════════════════════════════════════════════════════════ */}
         <section
           id="section-alokasi-bos"
           className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all duration-300 space-y-5 scroll-mt-24"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                 <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                  Transparansi Alokasi Dana BOS (BOSNAS & BOSDA)
+                  Transparansi Alokasi Dana BOSP (Bantuan Operasional Satuan Pendidikan)
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Akuntabilitas penyaluran dan realisasi dana operasional satuan pendidikan tahun anggaran berjalan.
+              <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                Penyaluran dana terintegrasi BOSP Reguler (Kemendikbudristek APBN) &amp; BOSP Daerah (BOSDA Sulteng APBD).
+                <span className="font-semibold text-slate-700"> Penyaluran tahap lanjutan hanya dapat dicairkan bagi sekolah yang telah menyelesaikan pelaporan realisasi.</span>
               </p>
             </div>
-            <span className="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Pelaporan ARKAS 100% Selesai
-            </span>
+
+            {/* Status Pelaporan & Tombol Simulasi Uji Status */}
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              {isBospReported ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Telah Melapor · Siap Dicairkan</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                  <span>Belum Melapor · Pencairan Ditangguhkan</span>
+                </span>
+              )}
+
+              {/* Toggle Cepat Pengujian Mode (Untuk Kemudahan Review Bersama Atasan) */}
+              <button
+                type="button"
+                onClick={() => setBospReportOverride(isBospReported ? false : true)}
+                className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors shadow-2xs cursor-pointer"
+                title="Klik untuk menguji simulasi: Sekolah yang Telah Melapor vs Belum Melapor"
+              >
+                Uji: {isBospReported ? "Simulasi Belum Lapor" : "Simulasi Telah Lapor"}
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Kebijakan Pencairan BOSP */}
+          <div className={`p-3.5 rounded-xl border text-xs flex items-start gap-3 transition-colors ${
+            isBospReported
+              ? "bg-emerald-50/60 border-emerald-200/80 text-emerald-900"
+              : "bg-amber-50/70 border-amber-200/80 text-amber-900"
+          }`}>
+            <Info className={`w-4 h-4 shrink-0 mt-0.5 ${isBospReported ? "text-emerald-600" : "text-amber-600"}`} />
+            <div className="leading-relaxed">
+              <span className="font-extrabold">Ketentuan Resmi Penyaluran BOSP: </span>
+              {isBospReported ? (
+                <span>
+                  Satuan pendidikan telah menuntaskan pengesahan pembukuan BKU ARKAS dan penyampaian LPJ Disdik. Seluruh alokasi tahap berjalan <strong className="font-bold text-emerald-700">telah memenuhi syarat untuk dicairkan 100%</strong> ke rekening giro sekolah di Bank Sulteng.
+                </span>
+              ) : (
+                <span>
+                  Satuan pendidikan masih dalam status <strong className="font-bold text-amber-700">proses pelaporan (on progress / belum lapor)</strong>. Sesuai juknis BOSP, <strong className="font-bold text-amber-800">dana tahap 2 belum dapat dicairkan</strong> sampai laporan realisasi diunggah dan diverifikasi oleh tim dinas.
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* KARTU 1: BOS REGULER (BOSNAS APBN) */}
+            {/* KARTU 1: BOSP REGULER (APBN KEMENDIKBUDRISTEK) */}
             <div className="group p-5 rounded-2xl bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1932,11 +1999,11 @@ export const SekolahDetail = () => {
                     KEMENDIKBUDRISTEK (APBN)
                   </span>
                   <h4 className="text-base font-black text-slate-900 mt-1 group-hover:text-blue-700 transition-colors">
-                    BOS Reguler Nasional (BOSNAS)
+                    BOSP Reguler (Nasional)
                   </h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-400 font-bold block">Pagu Tahunan</span>
+                  <span className="text-xs text-slate-400 font-bold block">Pagu BOSP Tahunan</span>
                   <span className="text-lg font-black text-blue-700">
                     Rp {bosRegulerVal.toLocaleString("id-ID")}
                   </span>
@@ -1950,24 +2017,36 @@ export const SekolahDetail = () => {
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60">
                   <span className="text-slate-600">Penyaluran Tahap 1 (50%):</span>
-                  <span className="font-bold text-emerald-700">Rp {(bosRegulerVal * 0.5).toLocaleString("id-ID")} (Tersalurkan 100%)</span>
+                  <span className="font-bold text-emerald-700">
+                    Rp {bospTahap1Reguler.toLocaleString("id-ID")} (Tersalurkan 100%)
+                  </span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60">
                   <span className="text-slate-600">Penyaluran Tahap 2 (50%):</span>
-                  <span className="font-bold text-emerald-700">Rp {(bosRegulerVal * 0.5).toLocaleString("id-ID")} (Tersalurkan 100%)</span>
+                  {isBospReported ? (
+                    <span className="font-bold text-emerald-700">
+                      Rp {bospTahap2Reguler.toLocaleString("id-ID")} (Dapat Dicairkan)
+                    </span>
+                  ) : (
+                    <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      Rp 0 (Belum Melapor — Tertunda)
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between py-1.5">
-                  <span className="text-slate-600">Tingkat Serapan Anggaran:</span>
-                  <span className="font-extrabold text-blue-700">94.5% (Tercatat BOSP)</span>
+                  <span className="text-slate-600">Status Serapan &amp; Pelaporan:</span>
+                  <span className={`font-extrabold ${isBospReported ? "text-blue-700" : "text-amber-700"}`}>
+                    {isBospReported ? "94.5% (Tercatat BOSP Salur)" : "50.0% (Menunggu Penutupan BKU)"}
+                  </span>
                 </div>
               </div>
 
               <p className="text-[11px] text-slate-500 leading-relaxed bg-white group-hover:bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 transition-colors">
-                Dialokasikan untuk operasional KBM, pengadaan buku teks Kurikulum Merdeka, pemeliharaan sarana kelas, dan kegiatan asesmen siswa.
+                Dialokasikan untuk operasional KBM, pengadaan buku teks Kurikulum Merdeka, pemeliharaan sarana kelas, dan kegiatan asesmen siswa sesuai juknis BOSP Kemendikbudristek.
               </p>
             </div>
 
-            {/* KARTU 2: BOS DAERAH (BOSDA PROV. SULTENG APBD) */}
+            {/* KARTU 2: BOSP DAERAH (BOSDA PROV. SULTENG APBD) */}
             <div className="group p-5 rounded-2xl bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1975,11 +2054,11 @@ export const SekolahDetail = () => {
                     PEMPROV SULAWESI TENGAH (APBD)
                   </span>
                   <h4 className="text-base font-black text-slate-900 mt-1 group-hover:text-indigo-700 transition-colors">
-                    BOS Daerah (BOSDA Sulteng)
+                    BOSP Daerah (BOSDA Sulteng)
                   </h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-400 font-bold block">Alokasi APBD</span>
+                  <span className="text-xs text-slate-400 font-bold block">Alokasi BOSDA APBD</span>
                   <span className="text-lg font-black text-indigo-700">
                     Rp {bosdaVal.toLocaleString("id-ID")}
                   </span>
@@ -1993,20 +2072,32 @@ export const SekolahDetail = () => {
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60">
                   <span className="text-slate-600">Penyaluran Semester I:</span>
-                  <span className="font-bold text-emerald-700">Rp {(bosdaVal * 0.5).toLocaleString("id-ID")} (Tercairkan)</span>
+                  <span className="font-bold text-emerald-700">
+                    Rp {bospSemester1Bosda.toLocaleString("id-ID")} (Tercairkan)
+                  </span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200/60">
                   <span className="text-slate-600">Penyaluran Semester II:</span>
-                  <span className="font-bold text-emerald-700">Rp {(bosdaVal * 0.5).toLocaleString("id-ID")} (Tercairkan)</span>
+                  {isBospReported ? (
+                    <span className="font-bold text-emerald-700">
+                      Rp {bospSemester2Bosda.toLocaleString("id-ID")} (Dapat Dicairkan)
+                    </span>
+                  ) : (
+                    <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      Rp 0 (LPJ Belum Ada — Tertunda)
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between py-1.5">
-                  <span className="text-slate-600">Tingkat Serapan Anggaran:</span>
-                  <span className="font-extrabold text-indigo-700">97.2% (LPJ Diterima Disdik)</span>
+                  <span className="text-slate-600">Status Verifikasi LPJ:</span>
+                  <span className={`font-extrabold ${isBospReported ? "text-indigo-700" : "text-amber-700"}`}>
+                    {isBospReported ? "97.2% (LPJ Diterima Disdik)" : "Tahap Verifikasi LPJ Sekolah"}
+                  </span>
                 </div>
               </div>
 
               <p className="text-[11px] text-slate-500 leading-relaxed bg-white group-hover:bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 transition-colors">
-                Diperuntukkan bagi insentif guru honorer non-ASN, subsidi perlengkapan bagi murid prasejahtera, serta peningkatan kompetensi pendidik.
+                Diperuntukkan bagi insentif guru honorer non-ASN, subsidi perlengkapan bagi murid prasejahtera, serta peningkatan mutu pendidik di sekolah wilayah binaan Cabang Dinas.
               </p>
             </div>
 

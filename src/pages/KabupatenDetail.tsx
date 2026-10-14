@@ -352,6 +352,7 @@ export const KabupatenDetail = () => {
   const [deleteTarget, setDeleteTarget] = useState<SekolahMarker | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editTargetNpsn, setEditTargetNpsn] = useState<string | null>(null);
+  const [editInitialTab, setEditInitialTab] = useState<"identitas" | "lokasi" | "tambahan">("identitas");
 
   const handleEditSuccess = (updatedData: any) => {
     if (!editTargetNpsn) return;
@@ -1599,16 +1600,30 @@ export const KabupatenDetail = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleFocusSchool(school);
+                          if (hasCoordinates) {
+                            handleFocusSchool(school);
+                          } else if (isAdmin && school.npsn) {
+                            setEditInitialTab("lokasi");
+                            setEditTargetNpsn(school.npsn);
+                          }
                         }}
-                        disabled={!hasCoordinates}
+                        disabled={!hasCoordinates && !isAdmin}
+                        title={
+                          hasCoordinates
+                            ? "Fokus ke titik lokasi pada peta"
+                            : isAdmin
+                              ? "Sekolah ini belum memiliki titik koordinat. Klik untuk atur lokasinya pada peta!"
+                              : "Titik lokasi sekolah belum terdata"
+                        }
                         className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${hasCoordinates
                           ? "bg-white hover:bg-slate-100 text-slate-700 border-slate-200 shadow-2xs"
-                          : "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed"
+                          : isAdmin
+                            ? "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200 shadow-2xs"
+                            : "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed"
                           }`}
                       >
                         <MapPin className="w-3 h-3" />
-                        <span>Lokasi</span>
+                        <span>{hasCoordinates ? "Lokasi" : (isAdmin ? "Set Lokasi" : "Lokasi")}</span>
                       </button>
 
                       <Link
@@ -1626,7 +1641,10 @@ export const KabupatenDetail = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (school.npsn) setEditTargetNpsn(school.npsn);
+                            if (school.npsn) {
+                              setEditInitialTab("identitas");
+                              setEditTargetNpsn(school.npsn);
+                            }
                           }}
                           className="flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-[9px] font-bold uppercase tracking-wider border border-blue-200 cursor-pointer"
                         >
@@ -1768,7 +1786,11 @@ export const KabupatenDetail = () => {
       <SekolahEditModal
         isOpen={!!editTargetNpsn}
         npsn={editTargetNpsn}
-        onClose={() => setEditTargetNpsn(null)}
+        initialTab={editInitialTab}
+        onClose={() => {
+          setEditTargetNpsn(null);
+          setEditInitialTab("identitas");
+        }}
         onSuccess={handleEditSuccess}
       />
 
